@@ -1,4 +1,23 @@
-FROM ubuntu:latest
-LABEL authors="austinsnyder"
+FROM maven:3.9.9-eclipse-temurin-22 AS builder
 
-ENTRYPOINT ["top", "-b"]
+WORKDIR /app
+
+COPY pom.xml .
+
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+
+RUN mvn clean package
+
+FROM eclipse-temurin:22-jdk AS runner
+
+WORKDIR /app
+
+COPY --from=builder ./app/target/auth-service-0.0.1-SNAPSHOT.jar ./app.jar
+
+# Specify port to run the app on.
+EXPOSE 4005
+
+# Run the jar file.
+ENTRYPOINT ["java", "-jar", "app.jar"]
