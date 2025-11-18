@@ -1,5 +1,7 @@
 package com.cm.authservice.util;
 
+import com.cm.authservice.exception.TokenEmailDoesNotMatchException;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -42,4 +44,24 @@ public class JwtUtil {
             throw new JwtException("Invalid JWT");
         }
     }
+
+    public void validateTokenEmailMatchesProvidedEmail(String token, String email) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            String subject = claims.getSubject();
+
+            if (!subject.equalsIgnoreCase(email)) {
+                throw new TokenEmailDoesNotMatchException("Token does not belong to the provided email.");
+            }
+
+        } catch (Exception e) {
+            throw new JwtException("Invalid token");
+        }
+    }
+
 }
