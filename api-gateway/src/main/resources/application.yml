@@ -1,0 +1,56 @@
+server:
+  port: 4004
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: client-service-route
+          uri: http://client-service:4000
+          predicates:
+            - name: Path
+              args:
+                pattern: /api/clients/**
+          filters:
+            - name: StripPrefix
+              args:
+                parts: 1
+            - name: JwtValidation
+
+        - id: api-docs-clients-route
+          uri: http://client-service:4000
+          predicates:
+            - name: Path
+              args:
+                pattern: /api-docs/clients
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /api-docs/clients
+                replacement: /v3/api-docs
+
+        - id: auth-service-route
+          uri: http://auth-service:4005
+          predicates:
+            - name: Path
+              args:
+                pattern: /api/auth/**
+          filters:
+            - name: StripPrefix
+              args:
+                parts: 1
+
+        - id: api-docs-auth-route
+          uri: http://auth-service:4005
+          predicates:
+            - name: Path
+              args:
+                pattern: /api-docs/auth
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /api-docs/auth
+                replacement: /v3/api-docs
+
+
+
