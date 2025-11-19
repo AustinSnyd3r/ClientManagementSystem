@@ -1,7 +1,10 @@
 package com.cm.clientservice.controller;
 
+import com.cm.clientservice.dto.validators.CreateUserValidationGroup;
 import com.cm.clientservice.service.UserService;
+import jakarta.validation.groups.Default;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +28,7 @@ public class UserController {
     @PostMapping
     @Operation(summary = "Create a user")
     public ResponseEntity<UserResponseDTO> createUser(
+            @Validated({Default.class, CreateUserValidationGroup.class})
             @RequestBody UserRequestDTO userRequestDTO){
 
         UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
@@ -42,10 +46,13 @@ public class UserController {
     @PutMapping("/{id}")
     @Operation(summary = "Update a user")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
-                                                       @RequestBody UserRequestDTO userRequestDTO){
-        //TODO: Implement me and replace tis
+                                                       @RequestBody UserRequestDTO userRequestDTO,
+                                                        @RequestHeader("Authorization") String authHeader
+    ){
+        int tokenStartIdx = 7;
+        String token = authHeader.substring(tokenStartIdx);
 
-        userService.updateUser(id, userRequestDTO);
+        userService.updateUser(id, userRequestDTO, token);
         return ResponseEntity.ok().body(new UserResponseDTO());
     }
 

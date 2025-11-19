@@ -1,13 +1,17 @@
 package com.cm.clientservice.service;
 
+import com.cm.clientservice.dto.OutgoingEmailUpdateDTO;
 import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
 import com.cm.clientservice.exception.EmailAlreadyExistsException;
+import com.cm.clientservice.exception.UserNotFoundException;
 import com.cm.clientservice.mapper.UserMapper;
 import com.cm.clientservice.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import com.cm.clientservice.model.User;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,9 +21,15 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final WebClient webClient;
 
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository,
+                       WebClient.Builder webClientBuilder,
+                       @Value("${auth.service.url}") String authServiceUrl){
+
         this.userRepository = userRepository;
+        this.webClient = webClientBuilder.baseUrl(authServiceUrl).build();
+
     }
 
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO){
@@ -47,13 +57,46 @@ public class UserService {
                 .toList();
     }
 
-    public UserResponseDTO updateUserNOTDONE(UUID id, UserRequestDTO userRequestDTO){
+    public UserResponseDTO updateUser(UUID id, UserRequestDTO userRequestDTO, String token){
+        User user = userRepository.findById(id).orElseThrow(
+            () ->  new UserNotFoundException("User not found with id: " + id));
+
+        boolean updatingEmail = !user.getEmail().equalsIgnoreCase(userRequestDTO.getEmail());
+
         // Check if user is attempting to change their email to something someone else is using.
+        if(updatingEmail && userRepository.existsByEmailAndIdNot(userRequestDTO.getEmail(), id)){
+            throw new EmailAlreadyExistsException("A user with this email already exists: "
+                    + userRequestDTO.getEmail());
+        }
 
         // We must ensure one of two things happens: BOTH or NEITHER work.
             // Attempt to change email in auth service.
             // Attempt to change user here.
-        return null;
+
+        if(updatingEmail) {
+            OutgoingEmailUpdateDTO outgoingEmailUpdateDTO = new OutgoingEmailUpdateDTO();
+            outgoingEmailUpdateDTO.setOldEmail(user.getEmail());
+            outgoingEmailUpdateDTO.setNewEmail(userRequestDTO.getEmail());
+
+            // Make a request to the auth service to update the email of the user with this email.
+            // Now check if the token they supplied was valid using our endpoint of auth service.
+            webClient.put()
+                    .uri("/auth/update-email")
+                    .header(HttpHeaders.AUTHORIZATION, token)
+                    .bodyValue(outgoingEmailUpdateDTO)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+        }
+
+        user.setEmail(userRequestDTO.getEmail());
+        user.setFirstName(userRequestDTO.getFirstName());
+        user.setLastName(userRequestDTO.getLastName());
+        user.setAddress(userRequestDTO.getAddress());
+        user.setDateOfBirth(LocalDate.parse(userRequestDTO.getDateOfBirth()));
+        User updatedUser = userRepository.save(user);
+
+        return UserMapper.toDTO(updatedUser);
     }
 
 

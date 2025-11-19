@@ -1,0 +1,13 @@
+### Post request to create a user.
+POST http://localhost:4004/api/clients
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "email": "test_user@test.com",
+  "address": "123 Test-Request Ave, 493201, WA, USA.",
+  "dateOfBirth": "2000-01-01",
+  "registeredDate": "2025-01-01"
+}

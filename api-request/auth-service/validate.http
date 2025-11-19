@@ -1,0 +1,3 @@
+### GET REQUEST OT VALIDATE THE JWT TOKEN
+GET http://localhost:4004/api/auth/validate
+Authorization: Bearer {{token}}

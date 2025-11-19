@@ -7,13 +7,14 @@ import com.cm.clientservice.model.User;
 import java.time.LocalDate;
 
 public class UserMapper {
-    public static UserResponseDTO toDTO(User patient){
+    public static UserResponseDTO toDTO(User user){
         UserResponseDTO userDTO = new UserResponseDTO();
-        userDTO.setId(patient.getId().toString());
-        userDTO.setFirstName(patient.getFirstName());
-        userDTO.setAddress(patient.getAddress());
-        userDTO.setEmail(patient.getEmail());
-        userDTO.setDateOfBirth(patient.getDateOfBirth().toString());
+        userDTO.setId(user.getId().toString());
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setAddress(user.getAddress());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setDateOfBirth(user.getDateOfBirth().toString());
 
         return userDTO;
     }
