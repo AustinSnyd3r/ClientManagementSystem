@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -39,4 +40,12 @@ public class User {
 
     @NotBlank
     private String address;
+
+    @OneToOne
+    @JoinColumn(name = "coach_profile_id")
+    private CoachProfile coachProfile;
+
+    @OneToOne
+    @JoinColumn(name = "client_profile_id")
+    private ClientProfile clientProfile;
 }

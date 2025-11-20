@@ -1,6 +1,8 @@
 package com.cm.clientservice.repository;
 import com.cm.clientservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
@@ -9,4 +11,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmailAndIdNot(String email, UUID id);
 
+    List<User> findByCoachProfileIsNotNull();
 }
