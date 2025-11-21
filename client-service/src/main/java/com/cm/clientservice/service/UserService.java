@@ -57,6 +57,14 @@ public class UserService {
                 .toList();
     }
 
+    public List<UserResponseDTO> getAllCoachUsers(){
+        List<User> users = userRepository.findByCoachProfileIsNotNull();
+
+        return users.stream()
+                .map(UserMapper::toDTO)
+                .toList();
+    }
+
     public UserResponseDTO updateUser(UUID id, UserRequestDTO userRequestDTO, String token){
         User user = userRepository.findById(id).orElseThrow(
             () ->  new UserNotFoundException("User not found with id: " + id));
