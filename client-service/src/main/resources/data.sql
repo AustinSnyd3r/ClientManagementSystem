@@ -1,5 +1,5 @@
 -- Ensure the 'patient' table exists
-CREATE TABLE IF NOT EXISTS patient
+CREATE TABLE IF NOT EXISTS users
 (
     id              UUID PRIMARY KEY,
     first_name            VARCHAR(255)        NOT NULL,
@@ -20,5 +20,5 @@ SELECT '123e4567-e89b-12d3-a456-426614174000',
        '1985-06-15',
        '2024-01-10'
     WHERE NOT EXISTS (SELECT 1
-                  FROM patient
+                  FROM users
                   WHERE id = '123e4567-e89b-12d3-a456-426614174000');

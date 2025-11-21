@@ -1,0 +1,36 @@
+package com.cm.clientservice.model.schedule;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Getter
+@Setter
+public class Workout {
+    @Id
+    @GeneratedValue
+    private UUID id;
+
+    @ManyToMany
+    @JoinTable(
+            name = "workout_exercise",
+            joinColumns = @JoinColumn(name = "workout_id"),
+            inverseJoinColumns = @JoinColumn(name = "exercise_id")
+    )
+    private List<Exercise> exercises;
+
+    @NotNull
+    private LocalDate date;
+
+    @NotNull
+    private String workoutNotes;
+
+    @NotNull
+    private boolean isCompleted;
+}
