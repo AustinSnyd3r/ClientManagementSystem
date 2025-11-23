@@ -43,16 +43,18 @@ public class UserController {
         return ResponseEntity.ok().body(users);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/")
     @Operation(summary = "Update a user")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
-                                                       @RequestBody UserRequestDTO userRequestDTO,
-                                                        @RequestHeader("Authorization") String authHeader
+    public ResponseEntity<UserResponseDTO> updateUser(@RequestHeader("X-AUTH-ID") String id,
+                                                      @RequestHeader("Authorization") String authHeader,
+                                                       @RequestBody UserRequestDTO userRequestDTO
     ){
         int tokenStartIdx = 7;
         String token = authHeader.substring(tokenStartIdx);
+        UUID authId = UUID.fromString(id);
 
-        userService.updateUser(id, userRequestDTO, token);
+        userService.updateUser(authId, userRequestDTO, token);
+
         return ResponseEntity.ok().body(new UserResponseDTO());
     }
 

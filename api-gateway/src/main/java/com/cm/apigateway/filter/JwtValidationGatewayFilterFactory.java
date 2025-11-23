@@ -5,6 +5,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -30,12 +31,30 @@ public class JwtValidationGatewayFilterFactory extends AbstractGatewayFilterFact
             }
 
             // Now check if the token they supplied was valid using our endpoint of auth service.
+
             return webClient.get()
                     .uri("/auth/validate")
-                        .header(HttpHeaders.AUTHORIZATION, token)
-                        .retrieve()
-                        .toBodilessEntity()
-                        .then(chain.filter(exchange));
+                    .header(HttpHeaders.AUTHORIZATION, token)
+                    .exchangeToMono(clientResponse -> {
+                        if(clientResponse.statusCode().is4xxClientError()
+                                || clientResponse.statusCode().is5xxServerError()){
+                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                            return exchange.getResponse().setComplete();
+                        }
+
+                        // Grab auth id header.
+                        String authId = clientResponse.headers()
+                                .asHttpHeaders()
+                                .getFirst("X-AUTH-ID");
+
+                        // Make a mutated request to append the headers.
+                        ServerHttpRequest mutatedRequest = exchange.getRequest()
+                                .mutate()
+                                .header("X-AUTH-ID", authId)
+                                .build();
+
+                        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+                    });
         };
     }
 }

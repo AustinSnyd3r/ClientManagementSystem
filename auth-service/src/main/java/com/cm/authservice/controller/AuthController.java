@@ -4,6 +4,7 @@ import com.cm.authservice.dto.EmailChangeRequestDTO;
 import com.cm.authservice.dto.EmailChangeResponseDTO;
 import com.cm.authservice.dto.LoginRequestDTO;
 import com.cm.authservice.dto.LoginResponseDTO;
+import com.cm.authservice.model.User;
 import com.cm.authservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
@@ -41,15 +42,22 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
 
-        return authService.validateToken(authHeader.substring(7))
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if(authService.validateToken(authHeader.substring(7))){
+            User user = authService.getUser(authHeader.substring(7));
+
+            return ResponseEntity.ok()
+                    .header("X-AUTH-ID", user.getId()
+                    .toString()).build();
+        }
+
+         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/update-email")
     @Operation(summary = "Update user account email.")
     public ResponseEntity<EmailChangeResponseDTO> updateEmail(@RequestHeader("Authorization") String authHeader,
                                                               @RequestBody EmailChangeRequestDTO emailChangeRequestDTO){
+
         if(authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 

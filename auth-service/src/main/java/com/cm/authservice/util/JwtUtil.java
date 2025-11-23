@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
@@ -25,11 +26,11 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String email, String role){
+    public String generateToken(UUID id, String role){
         return Jwts.builder()
-                .subject(email)         // Mark it for the individual
-                .claim("role", role)   // Mark the individuals role
-                .issuedAt(new Date())   // Creation time
+                .subject(String.valueOf(id)) // Mark it for the individual
+                .claim("role", role)      // Mark the individuals role
+                .issuedAt(new Date())        // Creation time
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(secretKey)    // Sign with our secret key, basically our encoding method we have
                 .compact();
@@ -45,6 +46,7 @@ public class JwtUtil {
         }
     }
 
+    /**
     public void validateTokenEmailMatchesProvidedEmail(String token, String email) {
         try {
             Claims claims = Jwts.parser()
@@ -63,5 +65,20 @@ public class JwtUtil {
             throw new JwtException("Invalid token");
         }
     }
+    */
 
+    public UUID getIdFromToken(String token){
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            String idString = claims.getSubject();
+            return UUID.fromString(idString);
+        } catch (Exception e) {
+            throw new JwtException("Invalid token");
+        }
+    }
 }
