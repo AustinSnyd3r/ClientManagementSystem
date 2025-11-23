@@ -22,21 +22,18 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public EmailChangeResponseDTO updateEmail(EmailChangeRequestDTO emailChangeRequestDTO){
+    public EmailChangeResponseDTO updateEmail(User user, EmailChangeRequestDTO emailChangeRequestDTO){
 
-        // Don't change if the new email already exists
         if(userRepository.existsByEmail(emailChangeRequestDTO.getNewEmail())){
             throw new EmailAlreadyExistsException("User already exists with email: " + emailChangeRequestDTO.getNewEmail());
         }
-
-        User user = userRepository.findByEmail(emailChangeRequestDTO.getOldEmail()).orElseThrow(
-                () -> new UserNotFoundException("User was not found with email: " + emailChangeRequestDTO.getOldEmail()));
 
         user.setEmail(emailChangeRequestDTO.getNewEmail());
         User updatedUser = userRepository.save(user);
 
         EmailChangeResponseDTO emailChangeResponseDTO = new EmailChangeResponseDTO();
         emailChangeResponseDTO.setSavedEmail(updatedUser.getEmail());
+
         return emailChangeResponseDTO;
     }
 

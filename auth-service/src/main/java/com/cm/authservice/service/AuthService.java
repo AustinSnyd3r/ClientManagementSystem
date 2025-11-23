@@ -3,6 +3,8 @@ package com.cm.authservice.service;
 import com.cm.authservice.dto.EmailChangeRequestDTO;
 import com.cm.authservice.dto.EmailChangeResponseDTO;
 import com.cm.authservice.dto.LoginRequestDTO;
+import com.cm.authservice.exception.TokenEmailDoesNotMatchException;
+import com.cm.authservice.exception.UserNotFoundException;
 import com.cm.authservice.model.User;
 import com.cm.authservice.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
@@ -54,16 +56,21 @@ public class AuthService {
 
     public EmailChangeResponseDTO updateEmail(String token, EmailChangeRequestDTO emailChangeRequestDTO) {
         // Validate token and check if it belongs to same person.
-       // jwtUtil.validateTokenEmailMatchesProvidedEmail(token, emailChangeRequestDTO.getOldEmail());
 
-        return userService.updateEmail(emailChangeRequestDTO);
+        User user = userService.findById(jwtUtil.getIdFromToken(token))
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
+
+        if(!user.getEmail().equalsIgnoreCase(emailChangeRequestDTO.getOldEmail())){
+            throw new TokenEmailDoesNotMatchException("Current account email does not match given old email.");
+        }
+
+        return userService.updateEmail(user, emailChangeRequestDTO);
     }
 
     public User getUser(String token) {
         UUID authUserId = jwtUtil.getIdFromToken(token);
 
         return userService.findById(authUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
     }
-
 }

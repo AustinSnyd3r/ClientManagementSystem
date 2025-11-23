@@ -21,6 +21,9 @@ public class User {
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true, nullable = false)
+    private UUID authId;
+
     @Email(message="Email is required")
     @NotBlank
     @Column(unique = true)

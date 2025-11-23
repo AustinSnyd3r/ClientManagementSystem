@@ -65,14 +65,15 @@ public class UserService {
                 .toList();
     }
 
-    public UserResponseDTO updateUser(UUID id, UserRequestDTO userRequestDTO, String token){
-        User user = userRepository.findById(id).orElseThrow(
-            () ->  new UserNotFoundException("User not found with id: " + id));
+    public UserResponseDTO updateUser(UUID authId, UserRequestDTO userRequestDTO, String token){
+        // Find the user that has the authId
+        User user = userRepository.findByAuthId(authId).orElseThrow(
+            () ->  new UserNotFoundException("User not found with authId: " + authId));
 
         boolean updatingEmail = !user.getEmail().equalsIgnoreCase(userRequestDTO.getEmail());
 
         // Check if user is attempting to change their email to something someone else is using.
-        if(updatingEmail && userRepository.existsByEmailAndIdNot(userRequestDTO.getEmail(), id)){
+        if(updatingEmail && userRepository.existsByEmailAndIdNot(userRequestDTO.getEmail(), user.getId())){
             throw new EmailAlreadyExistsException("A user with this email already exists: "
                     + userRequestDTO.getEmail());
         }
