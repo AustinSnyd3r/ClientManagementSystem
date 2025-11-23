@@ -8,6 +8,7 @@ import com.cm.authservice.model.User;
 import com.cm.authservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -37,5 +38,9 @@ public class UserService {
         EmailChangeResponseDTO emailChangeResponseDTO = new EmailChangeResponseDTO();
         emailChangeResponseDTO.setSavedEmail(updatedUser.getEmail());
         return emailChangeResponseDTO;
+    }
+
+    public Optional<User> findById(UUID id) {
+        return userRepository.findById(id);
     }
 }

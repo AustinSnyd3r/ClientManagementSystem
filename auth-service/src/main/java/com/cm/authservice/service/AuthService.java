@@ -3,16 +3,16 @@ package com.cm.authservice.service;
 import com.cm.authservice.dto.EmailChangeRequestDTO;
 import com.cm.authservice.dto.EmailChangeResponseDTO;
 import com.cm.authservice.dto.LoginRequestDTO;
+import com.cm.authservice.model.User;
 import com.cm.authservice.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
-import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -37,7 +37,7 @@ public class AuthService {
                 .findByEmail(loginRequestDTO.getEmail())
                 .filter(u -> passwordEncoder.matches(loginRequestDTO.getPassword(),
                     u.getPassword()))
-                .map(u -> jwtUtil.generateToken(u.getEmail(), u.getRole()));
+                .map(u -> jwtUtil.generateToken(u.getId(), u.getRole()));
 
         return token;
     }
@@ -54,8 +54,16 @@ public class AuthService {
 
     public EmailChangeResponseDTO updateEmail(String token, EmailChangeRequestDTO emailChangeRequestDTO) {
         // Validate token and check if it belongs to same person.
-        jwtUtil.validateTokenEmailMatchesProvidedEmail(token, emailChangeRequestDTO.getOldEmail());
+       // jwtUtil.validateTokenEmailMatchesProvidedEmail(token, emailChangeRequestDTO.getOldEmail());
 
         return userService.updateEmail(emailChangeRequestDTO);
     }
+
+    public User getUser(String token) {
+        UUID authUserId = jwtUtil.getIdFromToken(token);
+
+        return userService.findById(authUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
 }
