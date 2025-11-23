@@ -1,4 +1,4 @@
--- Ensure the 'patient' table exists
+-- Ensure the 'users' table exists
 CREATE TABLE IF NOT EXISTS users
 (
     id              UUID PRIMARY KEY,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users
     registration_date DATE                NOT NULL
     );
 
--- Insert well-known UUIDs for specific patients
+-- Insert well-known UUIDs for specific users
 INSERT INTO users (id, first_name, last_name, email, address, date_of_birth, registration_date)
 SELECT '123e4567-e89b-12d3-a456-426614174000',
        'Larry',

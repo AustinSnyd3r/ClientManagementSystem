@@ -19,14 +19,14 @@ public class UserMapper {
         return userDTO;
     }
 
-    public static User toModel(UserRequestDTO patientRequestDTO){
+    public static User toModel(UserRequestDTO userRequestDTO){
         User user = new User();
-        user.setFirstName(patientRequestDTO.getFirstName());
-        user.setLastName(patientRequestDTO.getLastName());
-        user.setAddress(patientRequestDTO.getAddress());
-        user.setEmail(patientRequestDTO.getEmail());
-        user.setDateOfBirth(LocalDate.parse(patientRequestDTO.getDateOfBirth()));
-        user.setRegistrationDate(LocalDate.parse(patientRequestDTO.getRegisteredDate()));
+        user.setFirstName(userRequestDTO.getFirstName());
+        user.setLastName(userRequestDTO.getLastName());
+        user.setAddress(userRequestDTO.getAddress());
+        user.setEmail(userRequestDTO.getEmail());
+        user.setDateOfBirth(LocalDate.parse(userRequestDTO.getDateOfBirth()));
+        user.setRegistrationDate(LocalDate.parse(userRequestDTO.getRegisteredDate()));
 
         return user;
     }
