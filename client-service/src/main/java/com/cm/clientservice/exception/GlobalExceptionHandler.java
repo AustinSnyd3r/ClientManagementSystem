@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUserNotFoundException(
             UserNotFoundException ex){
 
-        log.warn("Patient was not found {}", ex.getMessage());
+        log.warn("Client was not found {}", ex.getMessage());
         Map<String, String> errors = new HashMap<>();
         errors.put("message", "User not found");
         return ResponseEntity.badRequest().body(errors);
