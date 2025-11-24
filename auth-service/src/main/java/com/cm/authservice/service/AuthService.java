@@ -1,15 +1,14 @@
 package com.cm.authservice.service;
 
-import com.cm.authservice.dto.EmailChangeRequestDTO;
-import com.cm.authservice.dto.EmailChangeResponseDTO;
-import com.cm.authservice.dto.LoginRequestDTO;
-import com.cm.authservice.exception.TokenEmailDoesNotMatchException;
+import com.cm.authservice.dto.*;
 import com.cm.authservice.exception.UserNotFoundException;
 import com.cm.authservice.model.User;
 import com.cm.authservice.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +30,7 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public Optional<String> authenticate(LoginRequestDTO loginRequestDTO){
+    public Optional<String> authenticate(UserRequestDto loginRequestDTO){
         log.info("Authenticating a user: {}", loginRequestDTO.getEmail());
 
         // If user password matches, map the user to transform it into a token, which gets assigned to the optional.
@@ -54,17 +53,13 @@ public class AuthService {
         }
     }
 
-    public EmailChangeResponseDTO updateEmail(String token, EmailChangeRequestDTO emailChangeRequestDTO) {
+    public UserResponseDto updateEmail(String token, UserRequestDto userRequestDto) {
         // Validate token and check if it belongs to same person.
 
         User user = userService.findById(jwtUtil.getIdFromToken(token))
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
 
-        if(!user.getEmail().equalsIgnoreCase(emailChangeRequestDTO.getOldEmail())){
-            throw new TokenEmailDoesNotMatchException("Current account email does not match given old email.");
-        }
-
-        return userService.updateEmail(user, emailChangeRequestDTO);
+        return userService.updateEmail(user, userRequestDto);
     }
 
     public User getUser(String token) {
@@ -72,5 +67,14 @@ public class AuthService {
 
         return userService.findById(authUserId)
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
+    }
+
+    public ResponseEntity<UserResponseDto> register(UserRequestDto registrationRequestDto) {
+        String salt = BCrypt.gensalt();
+
+        String passwordHash =
+            BCrypt.hashpw(registrationRequestDto.getPassword(), BCrypt.gensalt());
+
+        return userService.registerUser(registrationRequestDto.getEmail(), passwordHash);
     }
 }
