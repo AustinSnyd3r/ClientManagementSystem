@@ -40,7 +40,6 @@ public class AuthController {
         if(authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-
         if(authService.validateToken(authHeader.substring(7))){
             User user = authService.getUser(authHeader.substring(7));
 
@@ -55,7 +54,8 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto){
-        return authService.register(userRequestDto);
+        UserResponseDto response = authService.register(userRequestDto);
+        return ResponseEntity.ok().body(response);
     }
 
     @PutMapping("/update-email")

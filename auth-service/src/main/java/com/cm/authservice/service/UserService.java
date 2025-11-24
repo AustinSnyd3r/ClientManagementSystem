@@ -2,12 +2,9 @@ package com.cm.authservice.service;
 import com.cm.authservice.dto.UserRequestDto;
 import com.cm.authservice.dto.UserResponseDto;
 import com.cm.authservice.exception.EmailAlreadyExistsException;
-
-import com.cm.authservice.dto.EmailChangeRequestDTO;
-import com.cm.authservice.dto.EmailChangeResponseDTO;
+import com.cm.authservice.mapper.UserMapper;
 import com.cm.authservice.model.User;
 import com.cm.authservice.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,12 +37,17 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public ResponseEntity<UserResponseDto> registerUser(String email, String passwordHash) {
+    public UserResponseDto registerUser(String email, String passwordHash) {
         if(userRepository.existsByEmail(email)){
             throw new EmailAlreadyExistsException("This email is already taken: " + email);
         }
 
-        User newUser = userRepository.save()
+        User user = new User();
+        user.setPassword(passwordHash);
+        user.setEmail(email);
 
+        User newUser = userRepository.save(user);
+
+        return UserMapper.toDto(newUser);
     }
 }

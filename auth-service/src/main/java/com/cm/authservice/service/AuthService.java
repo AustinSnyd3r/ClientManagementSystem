@@ -69,12 +69,13 @@ public class AuthService {
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
     }
 
-    public ResponseEntity<UserResponseDto> register(UserRequestDto registrationRequestDto) {
-        String salt = BCrypt.gensalt();
-
+    public UserResponseDto register(UserRequestDto registrationRequestDto) {
         String passwordHash =
             BCrypt.hashpw(registrationRequestDto.getPassword(), BCrypt.gensalt());
 
-        return userService.registerUser(registrationRequestDto.getEmail(), passwordHash);
+        return
+            userService.registerUser(registrationRequestDto.getEmail(), passwordHash);
+
+
     }
 }

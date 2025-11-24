@@ -6,7 +6,7 @@ import com.cm.authservice.model.User;
 
 public class UserMapper {
 
-    public User fromDto(UserRequestDto userRequestDto){
+    public static User fromDto(UserRequestDto userRequestDto){
         User user = new User();
         user.setPassword(userRequestDto.getPassword());
         user.setEmail(userRequestDto.getEmail());
@@ -14,7 +14,7 @@ public class UserMapper {
         return user;
     }
 
-    public UserResponseDto toDto(User user){
+    public static UserResponseDto toDto(User user){
         return new UserResponseDto(user.getEmail());
     }
 }
