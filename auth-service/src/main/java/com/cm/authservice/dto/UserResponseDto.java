@@ -1,12 +1,14 @@
 package com.cm.authservice.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-public class RegistrationResponseDTO {
+@Setter
+public class UserResponseDto {
     private final String email;
 
-    public RegistrationResponseDTO(String email){
+    public UserResponseDto(String email){
         this.email = email;
     }
 }

@@ -1,9 +1,8 @@
 package com.cm.authservice.controller;
 
-import com.cm.authservice.dto.EmailChangeRequestDTO;
-import com.cm.authservice.dto.EmailChangeResponseDTO;
-import com.cm.authservice.dto.LoginRequestDTO;
 import com.cm.authservice.dto.LoginResponseDTO;
+import com.cm.authservice.dto.UserRequestDto;
+import com.cm.authservice.dto.UserResponseDto;
 import com.cm.authservice.model.User;
 import com.cm.authservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +23,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Generate token on user login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO){
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserRequestDto loginRequestDTO){
         Optional<String> tokenOptional = authService.authenticate(loginRequestDTO);
 
         if(tokenOptional.isEmpty()){
@@ -41,7 +40,6 @@ public class AuthController {
         if(authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-
         if(authService.validateToken(authHeader.substring(7))){
             User user = authService.getUser(authHeader.substring(7));
 
@@ -53,18 +51,27 @@ public class AuthController {
          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
+    @PostMapping("/register")
+    @Operation(summary = "Register a new user")
+    public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto){
+        UserResponseDto response = authService.register(userRequestDto);
+        return ResponseEntity.ok().body(response);
+    }
+
     @PutMapping("/update-email")
     @Operation(summary = "Update user account email.")
-    public ResponseEntity<EmailChangeResponseDTO> updateEmail(@RequestHeader("Authorization") String authHeader,
-                                                              @RequestBody EmailChangeRequestDTO emailChangeRequestDTO){
+    public ResponseEntity<UserResponseDto> updateEmail(@RequestHeader("Authorization") String authHeader,
+                                                              @RequestBody UserRequestDto userRequestDto){
 
         if(authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         // Now check if the token came from the person who claimed to want to change their email.
-        EmailChangeResponseDTO emailChangeResponseDTO = authService
-                .updateEmail(authHeader.substring(7), emailChangeRequestDTO);
+        UserResponseDto userResponseDto = authService
+                .updateEmail(authHeader.substring(7), userRequestDto);
 
-        return ResponseEntity.ok().body(emailChangeResponseDTO);
+        return ResponseEntity.ok().body(userResponseDto);
     }
+
+
 }
