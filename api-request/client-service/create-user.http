@@ -1,6 +1,7 @@
 ### Post request to create a user.
 POST http://localhost:4004/api/clients
 Authorization: Bearer {{token}}
+X-AUTH-ID: a7920032-59cf-461f-a293-6944954d3747
 Content-Type: application/json
 
 {

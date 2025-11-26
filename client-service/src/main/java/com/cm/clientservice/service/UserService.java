@@ -32,15 +32,16 @@ public class UserService {
 
     }
 
-    public UserResponseDTO createUser(UserRequestDTO userRequestDTO){
+    public UserResponseDTO createUser(UserRequestDTO userRequestDTO, String auth_id){
         // Make a call to the repository to create a user.
         if(userRepository.existsByEmail(userRequestDTO.getEmail())){
             throw new EmailAlreadyExistsException("A user with this email already exists"
                 + userRequestDTO.getEmail());
         }
 
-        User newUser = userRepository.save(
-                UserMapper.toModel(userRequestDTO));
+        User newUser = UserMapper.toModel(userRequestDTO);
+        newUser.setAuthId(UUID.fromString(auth_id));
+        newUser = userRepository.save(newUser);
 
         return UserMapper.toDTO(newUser);
     }
