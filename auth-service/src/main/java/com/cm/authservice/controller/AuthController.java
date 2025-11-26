@@ -1,5 +1,4 @@
 package com.cm.authservice.controller;
-
 import com.cm.authservice.dto.LoginResponseDTO;
 import com.cm.authservice.dto.UserRequestDto;
 import com.cm.authservice.dto.UserResponseDto;
@@ -24,8 +23,8 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Generate token on user login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserRequestDto loginRequestDTO) {
-        Optional<String> tokenOptional = authService.authenticate(loginRequestDTO);
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserRequestDto userRequestDto) {
+        Optional<String> tokenOptional = authService.authenticate(userRequestDto);
 
         if (tokenOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -57,7 +56,7 @@ public class AuthController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PutMapping("/change-email")
+    @PostMapping("/change-email")
     @Operation(summary = "Change user account email.")
     public ResponseEntity<UserResponseDto> changeEmail(@RequestHeader("Authorization") String authHeader,
                                                        @RequestBody UserRequestDto userRequestDto) {

@@ -47,6 +47,9 @@ public class UserService {
         user.setPassword(passwordHash);
         user.setEmail(email);
 
+        // Magic role name, fix later when actually using roles.
+        user.setRole("BASE_USER");
+
         User newUser = userRepository.save(user);
 
         return UserMapper.toDto(newUser);

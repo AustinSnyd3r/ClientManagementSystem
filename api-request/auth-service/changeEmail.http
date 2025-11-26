@@ -1,0 +1,10 @@
+### Post mapping to update an email.
+
+### Requires a UserRequestDto: email (This is the new email.)
+POST http://localhost:4004/api/auth/change-email
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "conflicted_test_user@gmail.com"
+}

@@ -1,0 +1,7 @@
+POST http://localhost:4004/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test_email@gmail.com",
+  "password": "c++_4_life!"
+}

@@ -3,6 +3,8 @@ package com.cm.clientservice.controller;
 import com.cm.clientservice.dto.validators.CreateUserValidationGroup;
 import com.cm.clientservice.service.UserService;
 import jakarta.validation.groups.Default;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.UUID;
 @RequestMapping("/clients")
 @Tag(name="Clients", description = "API for managing Clients")
 public class UserController {
+    private final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
 
@@ -26,12 +29,14 @@ public class UserController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a user")
+    @Operation(summary = "Create a user.")
     public ResponseEntity<UserResponseDTO> createUser(
             @Validated({Default.class, CreateUserValidationGroup.class})
-            @RequestBody UserRequestDTO userRequestDTO){
-
-        UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
+            @RequestBody UserRequestDTO userRequestDTO,
+            @RequestHeader("X-AUTH-ID") String auth_id
+    ){
+        log.debug("AUTH ID IS {}", auth_id);
+        UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO, auth_id);
         return ResponseEntity.ok().body(userResponseDTO);
     }
 
