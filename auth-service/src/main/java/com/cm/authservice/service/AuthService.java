@@ -1,6 +1,7 @@
 package com.cm.authservice.service;
 
 import com.cm.authservice.dto.*;
+import com.cm.authservice.exception.TokenEmailDoesNotMatchException;
 import com.cm.authservice.exception.UserNotFoundException;
 import com.cm.authservice.model.User;
 import com.cm.authservice.util.JwtUtil;
@@ -69,13 +70,23 @@ public class AuthService {
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
     }
 
-    public UserResponseDto register(UserRequestDto registrationRequestDto) {
+    public UserResponseDto register(UserRequestDto userRequestDto) {
         String passwordHash =
-            BCrypt.hashpw(registrationRequestDto.getPassword(), BCrypt.gensalt());
+            BCrypt.hashpw(userRequestDto.getPassword(), BCrypt.gensalt());
 
         return
-            userService.registerUser(registrationRequestDto.getEmail(), passwordHash);
+            userService.registerUser(userRequestDto.getEmail(), passwordHash);
 
 
+    }
+
+    public UserResponseDto changePassword(UserRequestDto userRequestDto, String token) {
+        // Hash the new password.
+        String passwordHash =
+                BCrypt.hashpw(userRequestDto.getPassword(), BCrypt.gensalt());
+
+        UUID id = jwtUtil.getIdFromToken(token);
+
+        return userService.changePassword(id, passwordHash);
     }
 }

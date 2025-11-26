@@ -17,16 +17,17 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthService authService;
-    public AuthController(AuthService authService){
+
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
     @PostMapping("/login")
     @Operation(summary = "Generate token on user login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserRequestDto loginRequestDTO){
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserRequestDto loginRequestDTO) {
         Optional<String> tokenOptional = authService.authenticate(loginRequestDTO);
 
-        if(tokenOptional.isEmpty()){
+        if (tokenOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -36,34 +37,32 @@ public class AuthController {
 
     @GetMapping("/validate")
     @Operation(summary = "Validate token")
-    public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String authHeader){
-        if(authHeader == null || !authHeader.startsWith("Bearer "))
+    public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        if(authService.validateToken(authHeader.substring(7))){
+        if (authService.validateToken(authHeader.substring(7))) {
             User user = authService.getUser(authHeader.substring(7));
 
-            return ResponseEntity.ok()
-                    .header("X-AUTH-ID", user.getId()
-                    .toString()).build();
+            return ResponseEntity.ok().header("X-AUTH-ID", user.getId().toString()).build();
         }
 
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
-    public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto){
+    public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto) {
         UserResponseDto response = authService.register(userRequestDto);
         return ResponseEntity.ok().body(response);
     }
 
-    @PutMapping("/update-email")
-    @Operation(summary = "Update user account email.")
-    public ResponseEntity<UserResponseDto> updateEmail(@RequestHeader("Authorization") String authHeader,
-                                                              @RequestBody UserRequestDto userRequestDto){
+    @PutMapping("/change-email")
+    @Operation(summary = "Change user account email.")
+    public ResponseEntity<UserResponseDto> changeEmail(@RequestHeader("Authorization") String authHeader,
+                                                       @RequestBody UserRequestDto userRequestDto) {
 
-        if(authHeader == null || !authHeader.startsWith("Bearer "))
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         // Now check if the token came from the person who claimed to want to change their email.
@@ -73,5 +72,20 @@ public class AuthController {
         return ResponseEntity.ok().body(userResponseDto);
     }
 
+    @PostMapping("/change-password")
+    @Operation(summary = "Change a users password with valid token")
+    public ResponseEntity<UserResponseDto> changePassword(@RequestHeader("Authorization") String authHeader,
+                                                          @RequestBody UserRequestDto userRequestDto) {
+        if (authHeader == null
+                || !authHeader.startsWith("Bearer ")
+                || !authService.validateToken(authHeader.substring(7))) {
 
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserResponseDto response =
+                authService.changePassword(userRequestDto, authHeader.substring(7));
+
+        return ResponseEntity.ok().body(response);
+    }
 }

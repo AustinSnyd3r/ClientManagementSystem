@@ -2,6 +2,7 @@ package com.cm.authservice.service;
 import com.cm.authservice.dto.UserRequestDto;
 import com.cm.authservice.dto.UserResponseDto;
 import com.cm.authservice.exception.EmailAlreadyExistsException;
+import com.cm.authservice.exception.UserNotFoundException;
 import com.cm.authservice.mapper.UserMapper;
 import com.cm.authservice.model.User;
 import com.cm.authservice.repository.UserRepository;
@@ -13,17 +14,17 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public Optional<User> findByEmail(String email){
+    public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    public UserResponseDto updateEmail(User user, UserRequestDto userRequestDto){
+    public UserResponseDto updateEmail(User user, UserRequestDto userRequestDto) {
 
-        if(userRepository.existsByEmail(userRequestDto.getEmail())){
+        if (userRepository.existsByEmail(userRequestDto.getEmail())) {
             throw new EmailAlreadyExistsException("User already exists with email: " + userRequestDto.getEmail());
         }
 
@@ -38,7 +39,7 @@ public class UserService {
     }
 
     public UserResponseDto registerUser(String email, String passwordHash) {
-        if(userRepository.existsByEmail(email)){
+        if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException("This email is already taken: " + email);
         }
 
@@ -49,5 +50,18 @@ public class UserService {
         User newUser = userRepository.save(user);
 
         return UserMapper.toDto(newUser);
+    }
+
+    public UserResponseDto changePassword(UUID id, String passwordHash) {
+
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new UserNotFoundException("User was not found with id: " + id)
+        );
+
+        user.setPassword(passwordHash);
+
+        User updatedUser = userRepository.save(user);
+
+        return UserMapper.toDto(updatedUser);
     }
 }
