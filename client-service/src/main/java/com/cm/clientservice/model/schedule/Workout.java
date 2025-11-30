@@ -1,7 +1,7 @@
 package com.cm.clientservice.model.schedule;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,5 +32,5 @@ public class Workout {
     private String workoutNotes;
 
     @NotNull
-    private boolean isCompleted;
+    private Boolean isCompleted;
 }

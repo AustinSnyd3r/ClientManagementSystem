@@ -9,7 +9,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-public class WorkoutSchedule {
+public class TrainingSchedule {
 
     @Id
     @GeneratedValue

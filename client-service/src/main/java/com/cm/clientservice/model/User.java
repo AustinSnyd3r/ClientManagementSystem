@@ -1,5 +1,8 @@
 package com.cm.clientservice.model;
 
+import com.cm.clientservice.model.contract.AgreementTemplate;
+import com.cm.clientservice.model.contract.CoachClientAgreement;
+import com.cm.clientservice.model.schedule.TrainingSchedule;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -44,11 +47,16 @@ public class User {
     @NotBlank
     private String address;
 
-    @OneToOne
-    @JoinColumn(name = "coach_profile_id")
-    private CoachProfile coachProfile;
+    @OneToMany(mappedBy = "coach")
+    private List<CoachClientAgreement> coachAgreements;
+
+    @OneToMany(mappedBy = "client")
+    private List<CoachClientAgreement> clientAgreements;
+
+    @OneToMany(mappedBy = "author")
+    private List<AgreementTemplate> authoredTemplates;
 
     @OneToOne
-    @JoinColumn(name = "client_profile_id")
-    private ClientProfile clientProfile;
+    @JoinColumn(name="training_schedule_id")
+    private TrainingSchedule trainingSchedule;
 }
