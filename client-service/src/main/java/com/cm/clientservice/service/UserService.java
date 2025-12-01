@@ -3,9 +3,13 @@ package com.cm.clientservice.service;
 import com.cm.clientservice.dto.OutgoingEmailUpdateDTO;
 import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
+import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.exception.EmailAlreadyExistsException;
+import com.cm.clientservice.exception.UnauthorizedScheduleAccessException;
 import com.cm.clientservice.exception.UserNotFoundException;
+import com.cm.clientservice.mapper.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.UserMapper;
+import com.cm.clientservice.model.schedule.TrainingSchedule;
 import com.cm.clientservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,14 +25,20 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CoachClientAgreementService coachClientAgreementService;
+    private final TrainingScheduleService trainingScheduleService;
     private final WebClient webClient;
 
     public UserService(UserRepository userRepository,
                        WebClient.Builder webClientBuilder,
-                       @Value("${auth.service.url}") String authServiceUrl){
+                       @Value("${auth.service.url}") String authServiceUrl,
+                       CoachClientAgreementService coachClientAgreementService,
+                       TrainingScheduleService trainingScheduleService){
 
         this.userRepository = userRepository;
         this.webClient = webClientBuilder.baseUrl(authServiceUrl).build();
+        this.coachClientAgreementService = coachClientAgreementService;
+        this.trainingScheduleService = trainingScheduleService;
 
     }
 
@@ -58,13 +68,6 @@ public class UserService {
                 .toList();
     }
 
-    public List<UserResponseDTO> getAllCoachUsers(){
-        List<User> users = userRepository.findByCoachProfileIsNotNull();
-
-        return users.stream()
-                .map(UserMapper::toDTO)
-                .toList();
-    }
 
     public UserResponseDTO updateUser(UUID authId, UserRequestDTO userRequestDTO, String token){
         // Find the user that has the authId
@@ -88,8 +91,7 @@ public class UserService {
             outgoingEmailUpdateDTO.setOldEmail(user.getEmail());
             outgoingEmailUpdateDTO.setNewEmail(userRequestDTO.getEmail());
 
-            // Make a request to the auth service to update the email of the user with this email.
-            // Now check if the token they supplied was valid using our endpoint of auth service.
+            // Let auth service update their email for signing in.
             webClient.put()
                     .uri("/auth/update-email")
                     .header(HttpHeaders.AUTHORIZATION, token)
@@ -109,5 +111,54 @@ public class UserService {
         return UserMapper.toDTO(updatedUser);
     }
 
+    public List<UserResponseDTO> getClientsOfCoach(UUID coachAuthId){
+        UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
+                () -> new UserNotFoundException("Coach was not found with authId: " + coachAuthId)).getId();
 
+        return coachClientAgreementService
+                .getCoachClientAgreements(coachId)
+                .stream()
+                .map(a -> UserMapper.toDTO(a.getClient()))
+                .distinct()
+                .toList();
+    }
+
+    public List<UserResponseDTO> getCoachesOfClient(UUID clientAuthId) {
+        UUID clientId = userRepository.findByAuthId(clientAuthId).orElseThrow(
+                () -> new UserNotFoundException("Client was not found with authId: " + clientAuthId)).getId();
+
+        return coachClientAgreementService
+                .getCoachClientAgreements(clientId)
+                .stream()
+                .map(a -> UserMapper.toDTO(a.getCoach()))
+                .distinct()
+                .toList();
+    }
+
+    // TODO: Fix this, right now it is using the authId of the coach.
+    public TrainingScheduleDto getClientSchedule(UUID clientId, UUID coachAuthId){
+        UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
+                                () -> new UserNotFoundException("Coach was not found with authId: " + coachAuthId))
+                            .getId();
+
+        if (!coachClientAgreementService.isUserAClientOfCoach(clientId, coachId)) {
+            throw new UnauthorizedScheduleAccessException("The user with id: " + coachId + " is not a coach of user with id: " + clientId);
+        }
+
+        TrainingSchedule schedule = userRepository.findById(clientId).orElseThrow(
+                () -> new UserNotFoundException("Client was not found with ID: " + clientId)).getTrainingSchedule();
+
+        return TrainingScheduleMapper.toDto(schedule);
+    }
+
+    public TrainingScheduleDto getTrainingSchedule(UUID authId){
+
+        TrainingSchedule schedule =
+                userRepository.findByAuthId(authId)
+                        .orElseThrow(
+                                () -> new UserNotFoundException("User not found with authID: " + authId))
+                .getTrainingSchedule();
+
+        return TrainingScheduleMapper.toDto(schedule);
+    }
 }
