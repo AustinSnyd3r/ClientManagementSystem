@@ -29,10 +29,7 @@ import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +54,16 @@ public class ClientController {
     @GetMapping("/schedule")
     public ResponseEntity<TrainingScheduleDto> getTrainingSchedule(@RequestHeader("X-AUTH-ID") String authId){
         TrainingScheduleDto trainingScheduleDto = userService.getTrainingSchedule(UUID.fromString(authId));
+        return ResponseEntity.ok().body(trainingScheduleDto);
+    }
+
+    @DeleteMapping("/schedule/workout/{id}")
+    public ResponseEntity<TrainingScheduleDto> deleteWorkoutFromSchedule(@RequestHeader("X-AUTH-ID") String authId,
+                                                          @PathVariable String id){
+
+        TrainingScheduleDto trainingScheduleDto =
+                userService.removeWorkoutFromSchedule(UUID.fromString(authId), UUID.fromString(id));
+
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
 }

@@ -44,15 +44,19 @@ public class CoachingController {
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
 
-    //TODO: this
-    public ResponseEntity<UserResponseDTO> addClient(@RequestHeader("X-AUTH-ID") String authId,
-                                                     @RequestBody UserRequestDTO userRequestDTO,
+    @PostMapping("/propose-agreement/{clientId}")
+    public ResponseEntity<UserResponseDTO> proposeClientAgreement(@RequestHeader("X-AUTH-ID") String authId,
+                                                     @PathVariable String clientId,
                                                      @RequestBody CoachClientAgreement coachClientAgreement){
+
+        // This endpoint will allow for a coach to propose a client agreement to a user.
+
+
         return null;
     }
 
-    //TODO: this
-    public ResponseEntity<UserResponseDTO> removeClient(@RequestHeader() String authId,
+    @PostMapping("/break-agreement")
+    public ResponseEntity<UserResponseDTO> breakClientAgreement(@RequestHeader("X-AUTH-ID") String authId,
                                                       @RequestBody UserRequestDTO userRequestDTO,
                                                       @RequestBody CoachClientAgreement coachClientAgreement){
         // Alert the user they have been dropped.

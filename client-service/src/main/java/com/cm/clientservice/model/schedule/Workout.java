@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public class Workout {
             joinColumns = @JoinColumn(name = "workout_id"),
             inverseJoinColumns = @JoinColumn(name = "exercise_id")
     )
-    private List<Exercise> exercises;
+    private List<Exercise> exercises = new ArrayList<>();
 
     @NotNull
     private LocalDate date;
@@ -33,4 +34,8 @@ public class Workout {
 
     @NotNull
     private Boolean isCompleted;
+
+    @ManyToOne
+    @JoinColumn(name = "training_schedule_id")
+    private TrainingSchedule parentSchedule;
 }

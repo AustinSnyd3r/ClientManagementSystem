@@ -10,6 +10,7 @@ import com.cm.clientservice.exception.UserNotFoundException;
 import com.cm.clientservice.mapper.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.UserMapper;
 import com.cm.clientservice.model.schedule.TrainingSchedule;
+import com.cm.clientservice.model.schedule.Workout;
 import com.cm.clientservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -135,7 +137,6 @@ public class UserService {
                 .toList();
     }
 
-    // TODO: Fix this, right now it is using the authId of the coach.
     public TrainingScheduleDto getClientSchedule(UUID clientId, UUID coachAuthId){
         UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
                                 () -> new UserNotFoundException("Coach was not found with authId: " + coachAuthId))
@@ -160,5 +161,23 @@ public class UserService {
                 .getTrainingSchedule();
 
         return TrainingScheduleMapper.toDto(schedule);
+    }
+
+    public TrainingScheduleDto removeWorkoutFromSchedule(UUID clientAuthId, UUID workoutId) {
+        // Get the user.
+        TrainingSchedule trainingSchedule = userRepository.findByAuthId(clientAuthId).orElseThrow(
+                        () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
+                .getTrainingSchedule();
+
+        // Get their schedule and filter out the workout mentioned.
+        List<Workout> workouts = trainingSchedule
+                        .getWorkouts()
+                        .stream()
+                        .filter(s -> !(s.getId().equals( workoutId)))
+                        .collect(Collectors.toList());
+
+        trainingSchedule.setWorkouts(workouts);
+
+        return trainingScheduleService.saveSchedule(trainingSchedule);
     }
 }
