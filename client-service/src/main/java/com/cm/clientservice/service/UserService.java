@@ -4,11 +4,13 @@ import com.cm.clientservice.dto.OutgoingEmailUpdateDTO;
 import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
+import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.exception.EmailAlreadyExistsException;
 import com.cm.clientservice.exception.UnauthorizedScheduleAccessException;
 import com.cm.clientservice.exception.UserNotFoundException;
-import com.cm.clientservice.mapper.TrainingScheduleMapper;
+import com.cm.clientservice.mapper.schedule.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.UserMapper;
+import com.cm.clientservice.mapper.schedule.WorkoutMapper;
 import com.cm.clientservice.model.schedule.TrainingSchedule;
 import com.cm.clientservice.model.schedule.Workout;
 import com.cm.clientservice.repository.UserRepository;
@@ -164,7 +166,6 @@ public class UserService {
     }
 
     public TrainingScheduleDto removeWorkoutFromSchedule(UUID clientAuthId, UUID workoutId) {
-        // Get the user.
         TrainingSchedule trainingSchedule = userRepository.findByAuthId(clientAuthId).orElseThrow(
                         () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
                 .getTrainingSchedule();
@@ -177,6 +178,18 @@ public class UserService {
                         .collect(Collectors.toList());
 
         trainingSchedule.setWorkouts(workouts);
+
+        return trainingScheduleService.saveSchedule(trainingSchedule);
+    }
+
+    public TrainingScheduleDto addWorkoutToSchedule(UUID clientAuthId, WorkoutRequestDto workoutDto) {
+        TrainingSchedule trainingSchedule = userRepository.findByAuthId(clientAuthId).orElseThrow(
+                        () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
+                .getTrainingSchedule();
+
+        Workout workout = WorkoutMapper.toModel(workoutDto);
+        workout.setTrainingSchedule(trainingSchedule);
+        trainingSchedule.getWorkouts().add(workout);
 
         return trainingScheduleService.saveSchedule(trainingSchedule);
     }

@@ -16,6 +16,6 @@ public class TrainingSchedule {
     @GeneratedValue
     private UUID id;
 
-    @OneToMany(mappedBy = "parentSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trainingSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Workout> workouts = new ArrayList<>();
 }

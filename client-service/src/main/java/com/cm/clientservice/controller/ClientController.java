@@ -26,6 +26,7 @@ package com.cm.clientservice.controller;
 
 import com.cm.clientservice.dto.UserResponseDTO;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
+import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +64,15 @@ public class ClientController {
 
         TrainingScheduleDto trainingScheduleDto =
                 userService.removeWorkoutFromSchedule(UUID.fromString(authId), UUID.fromString(id));
+
+        return ResponseEntity.ok().body(trainingScheduleDto);
+    }
+
+    @PostMapping("/schedule/workout")
+    public ResponseEntity<TrainingScheduleDto> addWorkoutToSchedule(@RequestHeader("X-AUTH-ID") String authId,
+                                                                    @RequestBody WorkoutRequestDto workoutDto){
+        TrainingScheduleDto trainingScheduleDto =
+                userService.addWorkoutToSchedule(UUID.fromString(authId), workoutDto);
 
         return ResponseEntity.ok().body(trainingScheduleDto);
     }

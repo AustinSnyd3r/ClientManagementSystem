@@ -18,12 +18,7 @@ public class Workout {
     @GeneratedValue
     private UUID id;
 
-    @ManyToMany
-    @JoinTable(
-            name = "workout_exercise",
-            joinColumns = @JoinColumn(name = "workout_id"),
-            inverseJoinColumns = @JoinColumn(name = "exercise_id")
-    )
+    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Exercise> exercises = new ArrayList<>();
 
     @NotNull
@@ -37,5 +32,5 @@ public class Workout {
 
     @ManyToOne
     @JoinColumn(name = "training_schedule_id")
-    private TrainingSchedule parentSchedule;
+    private TrainingSchedule trainingSchedule;
 }

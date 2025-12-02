@@ -1,4 +1,4 @@
-package com.cm.clientservice.mapper;
+package com.cm.clientservice.mapper.schedule;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.model.schedule.TrainingSchedule;
 

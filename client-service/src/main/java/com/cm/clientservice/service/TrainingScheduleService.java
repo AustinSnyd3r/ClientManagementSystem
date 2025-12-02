@@ -1,7 +1,7 @@
 package com.cm.clientservice.service;
 
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
-import com.cm.clientservice.mapper.TrainingScheduleMapper;
+import com.cm.clientservice.mapper.schedule.TrainingScheduleMapper;
 import com.cm.clientservice.model.schedule.TrainingSchedule;
 import com.cm.clientservice.repository.TrainingScheduleRepository;
 import org.springframework.stereotype.Service;
