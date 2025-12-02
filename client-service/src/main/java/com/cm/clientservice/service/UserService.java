@@ -187,10 +187,28 @@ public class UserService {
                         () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
                 .getTrainingSchedule();
 
+        return addWorkoutToScheduleHelper(workoutDto, trainingSchedule);
+    }
+
+    private TrainingScheduleDto addWorkoutToScheduleHelper(WorkoutRequestDto workoutDto, TrainingSchedule trainingSchedule){
         Workout workout = WorkoutMapper.toModel(workoutDto);
         workout.setTrainingSchedule(trainingSchedule);
         trainingSchedule.getWorkouts().add(workout);
 
         return trainingScheduleService.saveSchedule(trainingSchedule);
+    }
+
+    public TrainingScheduleDto addWorkoutToClientsSchedule(UUID coachAuthId, UUID clientId, WorkoutRequestDto workoutDto) {
+        UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
+                () -> new UserNotFoundException("Coach not found with authId: " + coachAuthId)).getId();
+
+        if(!coachClientAgreementService.isUserAClientOfCoach(clientId, coachId)){
+            throw new UnauthorizedScheduleAccessException("The user with id: " + coachId + " is not a coach of user with id: " + clientId);
+        }
+
+        TrainingSchedule trainingSchedule = userRepository.findById(clientId).orElseThrow(
+                () -> new UserNotFoundException("User not found with id: " + clientId)).getTrainingSchedule();
+
+        return addWorkoutToScheduleHelper(workoutDto, trainingSchedule);
     }
 }

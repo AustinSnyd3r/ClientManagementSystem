@@ -4,6 +4,7 @@ import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
 import com.cm.clientservice.dto.contract.AgreementTemplateDto;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
+import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.model.contract.AgreementTemplate;
 import com.cm.clientservice.model.contract.CoachClientAgreement;
 import com.cm.clientservice.service.UserService;
@@ -43,6 +44,27 @@ public class CoachingController {
 
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
+
+    @DeleteMapping("/client-schedule/workout/{id}")
+    public ResponseEntity<TrainingScheduleDto> deleteWorkoutFromSchedule(@RequestHeader("X-AUTH-ID") String authId,
+                                                                         @PathVariable String id){
+
+        TrainingScheduleDto trainingScheduleDto =
+                userService.removeWorkoutFromSchedule(UUID.fromString(authId), UUID.fromString(id));
+
+        return ResponseEntity.ok().body(trainingScheduleDto);
+    }
+
+    @PostMapping("/client-schedule/{clientId}/workout")
+    public ResponseEntity<TrainingScheduleDto> addWorkoutToSchedule(@RequestHeader("X-AUTH-ID") String authId,
+                                                                    @PathVariable String clientId,
+                                                                    @RequestBody WorkoutRequestDto workoutDto){
+        TrainingScheduleDto trainingScheduleDto =
+                userService.addWorkoutToClientsSchedule(UUID.fromString(authId), UUID.fromString(clientId), workoutDto);
+
+        return ResponseEntity.ok().body(trainingScheduleDto);
+    }
+
 
     @PostMapping("/propose-agreement/{clientId}")
     public ResponseEntity<UserResponseDTO> proposeClientAgreement(@RequestHeader("X-AUTH-ID") String authId,
