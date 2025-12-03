@@ -13,9 +13,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CoachClientAgreement {
-    /**
-        Represents a running agreement document between
-     */
 
     @Id
     @GeneratedValue
@@ -38,5 +35,11 @@ public class CoachClientAgreement {
 
     @NotNull(message = "Coach-Client Agreement must have a start date.")
     private LocalDate startDate;
+
+    @NotNull(message = "Client agreement status must be specified. ")
+    private Boolean clientIsInAgreement;
+
+    @NotNull(message = "Coach agreement status must be specified. ")
+    private Boolean coachIsInAgreement;
 }
 

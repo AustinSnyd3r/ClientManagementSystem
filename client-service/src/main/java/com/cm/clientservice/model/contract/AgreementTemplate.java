@@ -19,6 +19,9 @@ public class AgreementTemplate {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank(message = "Template name must be provided.")
+    private String templateName;
+
     @NotNull(message = "Original author must be included for agreement template.")
     @ManyToOne
     @JoinColumn(name = "coach_profile_id")

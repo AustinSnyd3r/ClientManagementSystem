@@ -1,4 +1,5 @@
 package com.cm.clientservice.model.schedule;
+import com.cm.clientservice.model.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,9 @@ public class TrainingSchedule {
     @Id
     @GeneratedValue
     private UUID id;
+
+    @OneToOne
+    private User user;
 
     @OneToMany(mappedBy = "trainingSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Workout> workouts = new ArrayList<>();

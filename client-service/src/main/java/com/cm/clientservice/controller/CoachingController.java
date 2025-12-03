@@ -2,7 +2,7 @@ package com.cm.clientservice.controller;
 
 import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
-import com.cm.clientservice.dto.contract.AgreementTemplateDto;
+import com.cm.clientservice.dto.contract.AgreementTemplateResponseDto;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.model.contract.AgreementTemplate;
@@ -34,7 +34,7 @@ public class CoachingController {
         return ResponseEntity.ok().body(clients);
     }
 
-    @GetMapping("/client-schedule/{clientId}")
+    @GetMapping("/clients/{clientId}/schedule")
     @Operation(summary = "Get the clients training schedule for the coach to view. ")
     public ResponseEntity<TrainingScheduleDto> getClientSchedule(@RequestHeader("X-AUTH-ID") String authId,
                                                                  @PathVariable String clientId){
@@ -45,8 +45,8 @@ public class CoachingController {
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
 
-    @DeleteMapping("/client-schedule/workout/{id}")
-    public ResponseEntity<TrainingScheduleDto> deleteWorkoutFromSchedule(@RequestHeader("X-AUTH-ID") String authId,
+    @DeleteMapping("/clients/{clientId}/schedule/workout/{id}")
+    public ResponseEntity<TrainingScheduleDto> deleteWorkoutFromClientSchedule(@RequestHeader("X-AUTH-ID") String authId,
                                                                          @PathVariable String id){
 
         TrainingScheduleDto trainingScheduleDto =
@@ -55,8 +55,8 @@ public class CoachingController {
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
 
-    @PostMapping("/client-schedule/{clientId}/workout")
-    public ResponseEntity<TrainingScheduleDto> addWorkoutToSchedule(@RequestHeader("X-AUTH-ID") String authId,
+    @PostMapping("/clients/{clientId}/schedule/workout")
+    public ResponseEntity<TrainingScheduleDto> addWorkoutToClientSchedule(@RequestHeader("X-AUTH-ID") String authId,
                                                                     @PathVariable String clientId,
                                                                     @RequestBody WorkoutRequestDto workoutDto){
         TrainingScheduleDto trainingScheduleDto =
@@ -89,12 +89,12 @@ public class CoachingController {
 
     // These should probably go in their own controller.
     //TODO: This should be accessed only by accounts that have a coaching profile.
-    public ResponseEntity<AgreementTemplateDto> createAgreementTemplate(){
+    public ResponseEntity<AgreementTemplateResponseDto> createAgreementTemplate(){
         return null;
     }
 
     // TODO: This should be accessed only by accounts that have a coaching profile
-    public ResponseEntity<AgreementTemplateDto> deleteAgreementTemplate(){
+    public ResponseEntity<AgreementTemplateResponseDto> deleteAgreementTemplate(){
         return null;
     }
 
@@ -104,7 +104,7 @@ public class CoachingController {
     }
 
     // TODO: This should be accessed only by accounts that have a coach profile.
-    public ResponseEntity<List<AgreementTemplateDto>> getCoachAgreementTemplates(){
+    public ResponseEntity<List<AgreementTemplateResponseDto>> getCoachAgreementTemplates(){
         return null;
     }
 }

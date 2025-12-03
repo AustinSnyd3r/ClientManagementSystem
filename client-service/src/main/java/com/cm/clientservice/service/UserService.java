@@ -164,7 +164,7 @@ public class UserService {
         TrainingSchedule schedule =
                 userRepository.findByAuthId(authId)
                         .orElseThrow(
-                                () -> new UserNotFoundException("User not found with authID: " + authId))
+                                () -> new UserNotFoundException("User not found with authId: " + authId))
                 .getTrainingSchedule();
 
         return TrainingScheduleMapper.toDto(schedule);

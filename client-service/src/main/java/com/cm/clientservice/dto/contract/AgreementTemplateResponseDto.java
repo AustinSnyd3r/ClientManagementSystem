@@ -5,8 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AgreementTemplateDto {
+public class AgreementTemplateResponseDto {
     private String id;
+    private String templateName;
     private String authorId;
     private String paymentAmount;
     private String daysBetweenPayments;
