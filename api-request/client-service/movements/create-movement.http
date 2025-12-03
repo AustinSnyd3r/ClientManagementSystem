@@ -1,0 +1,10 @@
+POST http://localhost:4004/api/clients/movements
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name" : "Deadlift",
+  "description" : "Sumo or bust."
+}
+
+> {% client.global.set("created_movement_id", response.body.id) %}

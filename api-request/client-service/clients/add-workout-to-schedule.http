@@ -1,0 +1,23 @@
+POST http://localhost:4004/api/clients/client/schedule/workout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+
+{
+        "exercises" : [
+            {
+              "movement" : {
+                  "id" : "{{created_movement_id}}"
+              },
+              "numSets" : "3",
+              "numReps" : "10",
+              "coachNotes" : "Take these easy if you need to."
+            }
+        ],
+        "date" : "2025-10-20",
+        "workoutNotes" : "Hey this is the note. Do good.",
+        "isCompleted" : "False",
+        "trainingScheduleId" : ""
+}
+
+

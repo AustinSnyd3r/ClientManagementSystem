@@ -56,7 +56,7 @@ public class User {
     @OneToMany(mappedBy = "author")
     private List<AgreementTemplate> authoredTemplates;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="training_schedule_id")
     private TrainingSchedule trainingSchedule;
 }

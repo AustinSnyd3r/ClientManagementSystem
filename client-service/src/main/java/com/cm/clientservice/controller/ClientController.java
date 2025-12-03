@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/client")
+@RequestMapping("clients/client")
 @Tag(name="client", description = "API for clients to manage their experience.")
 public class ClientController {
 
@@ -58,12 +58,12 @@ public class ClientController {
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
 
-    @DeleteMapping("/schedule/workout/{id}")
+    @DeleteMapping("/schedule/workout/{workoutId}")
     public ResponseEntity<TrainingScheduleDto> deleteWorkoutFromSchedule(@RequestHeader("X-AUTH-ID") String authId,
-                                                          @PathVariable String id){
+                                                          @PathVariable String workoutId){
 
         TrainingScheduleDto trainingScheduleDto =
-                userService.removeWorkoutFromSchedule(UUID.fromString(authId), UUID.fromString(id));
+                userService.removeWorkoutFromSchedule(UUID.fromString(authId), UUID.fromString(workoutId));
 
         return ResponseEntity.ok().body(trainingScheduleDto);
     }

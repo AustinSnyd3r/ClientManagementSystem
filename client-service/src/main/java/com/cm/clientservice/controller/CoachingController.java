@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController("/coaching")
+@RestController("clients/coaching")
 @Tag(name = "coaching", description = "API for coaching management.")
 public class CoachingController {
 

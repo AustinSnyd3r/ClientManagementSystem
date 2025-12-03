@@ -1,0 +1,2 @@
+DELETE http://localhost:4004/api/clients/client/schedule/workout/fde2ca82-1a26-4767-adc9-8fbbdfc119e0
+Authorization: Bearer {{token}}

@@ -8,6 +8,7 @@ import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.exception.EmailAlreadyExistsException;
 import com.cm.clientservice.exception.UnauthorizedScheduleAccessException;
 import com.cm.clientservice.exception.UserNotFoundException;
+import com.cm.clientservice.exception.WorkoutNotFoundException;
 import com.cm.clientservice.mapper.schedule.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.UserMapper;
 import com.cm.clientservice.mapper.schedule.WorkoutMapper;
@@ -21,6 +22,7 @@ import com.cm.clientservice.model.User;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -55,6 +57,10 @@ public class UserService {
 
         User newUser = UserMapper.toModel(userRequestDTO);
         newUser.setAuthId(UUID.fromString(auth_id));
+
+        TrainingSchedule schedule = new TrainingSchedule();
+        newUser.setTrainingSchedule(schedule);
+
         newUser = userRepository.save(newUser);
 
         return UserMapper.toDTO(newUser);
@@ -71,7 +77,6 @@ public class UserService {
                 .map(UserMapper::toDTO)
                 .toList();
     }
-
 
     public UserResponseDTO updateUser(UUID authId, UserRequestDTO userRequestDTO, String token){
         // Find the user that has the authId
@@ -170,14 +175,16 @@ public class UserService {
                         () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
                 .getTrainingSchedule();
 
-        // Get their schedule and filter out the workout mentioned.
-        List<Workout> workouts = trainingSchedule
-                        .getWorkouts()
-                        .stream()
-                        .filter(s -> !(s.getId().equals( workoutId)))
-                        .collect(Collectors.toList());
+        List<Workout> workouts = trainingSchedule.getWorkouts();
 
-        trainingSchedule.setWorkouts(workouts);
+        Workout workoutToRemove =
+                        workouts.stream()
+                        .filter(w -> w.getId().equals(workoutId))
+                        .findFirst()
+                        .orElseThrow(
+                            () -> new WorkoutNotFoundException("Workout not found with id: " + workoutId));
+
+        workouts.remove(workoutToRemove);
 
         return trainingScheduleService.saveSchedule(trainingSchedule);
     }

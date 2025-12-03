@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("clients/users")
 @Tag(name="Users", description = "API for managing Users")
 public class UserController {
     private final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -58,9 +58,9 @@ public class UserController {
         String token = authHeader.substring(tokenStartIdx);
         UUID authId = UUID.fromString(id);
 
-        userService.updateUser(authId, userRequestDTO, token);
+        UserResponseDTO updatedUser = userService.updateUser(authId, userRequestDTO, token);
 
-        return ResponseEntity.ok().body(new UserResponseDTO());
+        return ResponseEntity.ok().body(updatedUser);
     }
 
 

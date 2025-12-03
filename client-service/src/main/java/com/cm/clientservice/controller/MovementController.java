@@ -25,7 +25,7 @@ public class MovementController {
         return ResponseEntity.ok().body(movementResponseDto);
     }
 
-    @GetMapping("/id/{movementId}")
+    @GetMapping("/{movementId}")
     public ResponseEntity<MovementResponseDto> getMovementById(@PathVariable String movementId){
         MovementResponseDto movementResponseDto =
                 movementService.getMovementById(UUID.fromString(movementId));
