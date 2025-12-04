@@ -2,7 +2,10 @@ package com.cm.clientservice.controller;
 
 import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
+import com.cm.clientservice.dto.contract.AgreementTemplateRequestDto;
 import com.cm.clientservice.dto.contract.AgreementTemplateResponseDto;
+import com.cm.clientservice.dto.contract.CoachClientAgreementRequestDto;
+import com.cm.clientservice.dto.contract.CoachClientAgreementResponseDto;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.model.contract.AgreementTemplate;
@@ -67,45 +70,59 @@ public class CoachingController {
     }
 
 
-    @PostMapping("/propose-agreement/{clientId}")
-    public ResponseEntity<UserResponseDTO> proposeClientAgreement(@RequestHeader("X-AUTH-ID") String coachAuthId,
-                                                     @PathVariable String clientId,
-                                                     @RequestBody CoachClientAgreement coachClientAgreement){
+    @PostMapping("/agreement/{clientId}")
+    public ResponseEntity<CoachClientAgreementResponseDto> proposeClientAgreement(@RequestHeader("X-AUTH-ID") String coachAuthId,
+                                                                                  @PathVariable String clientId,
+                                                                                  @RequestBody CoachClientAgreementRequestDto coachClientAgreement){
+        CoachClientAgreementResponseDto dto =
+                userService.proposeCoachClientAgreement(UUID.fromString(coachAuthId),
+                                                        UUID.fromString(clientId),
+                                                        coachClientAgreement);
 
-        // This endpoint will allow for a coach to propose a client agreement to a user.
-
-
-        return null;
+        return ResponseEntity.ok().body(dto);
     }
 
-    @PostMapping("/break-agreement")
-    public ResponseEntity<UserResponseDTO> breakClientAgreement(@RequestHeader("X-AUTH-ID") String authId,
-                                                      @RequestBody UserRequestDTO userRequestDTO,
-                                                      @RequestBody CoachClientAgreement coachClientAgreement){
+    @PutMapping("/agreement/withdraw/{agreementId}")
+    public ResponseEntity<CoachClientAgreementResponseDto> withdrawCoachesAgreementAcceptance(@RequestHeader("X-AUTH-ID") String coachAuthId,
+                                                      @PathVariable String agreementId){
         // Alert the user they have been dropped.
         // Alert billing service that the contract is being terminated.
-        return null;
+
+        CoachClientAgreementResponseDto dto =
+                userService.withdrawCoachesAgreementAcceptance(UUID.fromString(coachAuthId), UUID.fromString(agreementId));
+
+        return ResponseEntity.ok().body(dto);
     }
 
+    @PostMapping("/templates")
+    public ResponseEntity<AgreementTemplateResponseDto> createAgreementTemplate(@RequestHeader("X-AUTH-ID") String coachAuthId,
+                                                                                @RequestBody AgreementTemplateRequestDto templateRequestDto){
 
-    // These should probably go in their own controller.
-    //TODO: This should be accessed only by accounts that have a coaching profile.
-    public ResponseEntity<AgreementTemplateResponseDto> createAgreementTemplate(){
-        return null;
+        return ResponseEntity.ok().body(dto);
     }
 
     // TODO: This should be accessed only by accounts that have a coaching profile
     public ResponseEntity<AgreementTemplateResponseDto> deleteAgreementTemplate(){
-        return null;
+        return ResponseEntity.ok().build();
     }
 
-    // TODO: This should be accessed only by accounts that have a coach prifkle.
-    public ResponseEntity<AgreementTemplate> updateAgreementTemplate(){
-        return null;
+    @PutMapping("/templates/template/{templateId}/update")
+    public ResponseEntity<AgreementTemplateResponseDto> updateAgreementTemplate(@RequestHeader("X-AUTH-ID") String coachAuthId,
+                                                                     @RequestBody AgreementTemplateRequestDto templateRequestDto,
+                                                                     @PathVariable String templateId){
+        AgreementTemplateResponseDto dto =
+                //TODO: Add a validation group ot the request dto to make it optional for each of the fields.
+                userService.updateAgreementTemplate(UUID.fromString(coachAuthId), UUID.fromString(templateId), templateRequestDto);
+
+        return ResponseEntity.ok().body(dto);
     }
 
-    // TODO: This should be accessed only by accounts that have a coach profile.
-    public ResponseEntity<List<AgreementTemplateResponseDto>> getCoachAgreementTemplates(){
-        return null;
+    @GetMapping("/templates")
+    public ResponseEntity<List<AgreementTemplateResponseDto>> getCoachAgreementTemplates(@RequestHeader("X-AUTH-ID") String coachAuthId){
+         List<AgreementTemplateResponseDto> dtoList =
+                 userService.getCoachAgreementTemplates(UUID.fromString(coachAuthId));
+
+
+         return ResponseEntity.ok().body(dtoList);
     }
 }

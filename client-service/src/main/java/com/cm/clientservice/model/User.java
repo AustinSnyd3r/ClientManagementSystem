@@ -48,10 +48,10 @@ public class User {
     private String address;
 
     @OneToMany(mappedBy = "coach")
-    private List<CoachClientAgreement> coachAgreements;
+    private List<CoachClientAgreement> agreementsAsCoach;
 
     @OneToMany(mappedBy = "client")
-    private List<CoachClientAgreement> clientAgreements;
+    private List<CoachClientAgreement> agreementsAsClient;
 
     @OneToMany(mappedBy = "author")
     private List<AgreementTemplate> authoredTemplates;

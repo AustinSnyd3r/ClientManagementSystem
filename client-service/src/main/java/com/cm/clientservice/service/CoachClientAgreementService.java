@@ -1,4 +1,8 @@
 package com.cm.clientservice.service;
+import com.cm.clientservice.dto.contract.CoachClientAgreementRequestDto;
+import com.cm.clientservice.dto.contract.CoachClientAgreementResponseDto;
+import com.cm.clientservice.mapper.contract.CoachClientAgreementMapper;
+import com.cm.clientservice.model.User;
 import com.cm.clientservice.model.contract.CoachClientAgreement;
 import com.cm.clientservice.repository.CoachClientAgreementRepository;
 import org.springframework.stereotype.Service;
@@ -31,4 +35,20 @@ public class CoachClientAgreementService {
                 coachClientAgreement.getClientIsInAgreement();
     }
 
+    public CoachClientAgreementResponseDto proposeCoachClientAgreement(User coach, User client, CoachClientAgreementRequestDto agreementDto) {
+
+        CoachClientAgreement agreement = CoachClientAgreementMapper.toModel(agreementDto);
+        agreement.setCoach(coach);
+        agreement.setClient(client);
+
+        coachClientAgreementRepository.save(agreement);
+
+        return CoachClientAgreementMapper.toDto(agreement);
+    }
+
+    public CoachClientAgreementResponseDto withdrawCoachesAgreementAcceptance(CoachClientAgreement agreementToChange) {
+        agreementToChange.setCoachIsInAgreement(Boolean.FALSE);
+        CoachClientAgreement updatedAgreement = coachClientAgreementRepository.save(agreementToChange);
+        return CoachClientAgreementMapper.toDto(updatedAgreement);
+    }
 }
