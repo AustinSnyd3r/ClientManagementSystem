@@ -40,17 +40,18 @@ public class CoachingController {
                                                                  @PathVariable String clientId){
 
         TrainingScheduleDto trainingScheduleDto =
-                userService.getClientSchedule(UUID.fromString(clientId), UUID.fromString(authId));
+                userService.getClientTrainingSchedule(UUID.fromString(clientId), UUID.fromString(authId));
 
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
 
     @DeleteMapping("/clients/{clientId}/schedule/workout/{id}")
     public ResponseEntity<TrainingScheduleDto> deleteWorkoutFromClientSchedule(@RequestHeader("X-AUTH-ID") String authId,
-                                                                         @PathVariable String id){
+                                                                         @PathVariable String clientId,
+                                                                               @PathVariable String id){
 
         TrainingScheduleDto trainingScheduleDto =
-                userService.removeWorkoutFromSchedule(UUID.fromString(authId), UUID.fromString(id));
+                userService.removeWorkoutFromClientSchedule(UUID.fromString(authId), UUID.fromString(clientId), UUID.fromString(id));
 
         return ResponseEntity.ok().body(trainingScheduleDto);
     }
@@ -67,7 +68,7 @@ public class CoachingController {
 
 
     @PostMapping("/propose-agreement/{clientId}")
-    public ResponseEntity<UserResponseDTO> proposeClientAgreement(@RequestHeader("X-AUTH-ID") String authId,
+    public ResponseEntity<UserResponseDTO> proposeClientAgreement(@RequestHeader("X-AUTH-ID") String coachAuthId,
                                                      @PathVariable String clientId,
                                                      @RequestBody CoachClientAgreement coachClientAgreement){
 

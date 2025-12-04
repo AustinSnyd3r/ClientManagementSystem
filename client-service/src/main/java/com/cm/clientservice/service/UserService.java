@@ -8,12 +8,9 @@ import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.exception.EmailAlreadyExistsException;
 import com.cm.clientservice.exception.UnauthorizedScheduleAccessException;
 import com.cm.clientservice.exception.UserNotFoundException;
-import com.cm.clientservice.exception.WorkoutNotFoundException;
 import com.cm.clientservice.mapper.schedule.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.UserMapper;
-import com.cm.clientservice.mapper.schedule.WorkoutMapper;
 import com.cm.clientservice.model.schedule.TrainingSchedule;
-import com.cm.clientservice.model.schedule.Workout;
 import com.cm.clientservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -22,10 +19,8 @@ import com.cm.clientservice.model.User;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -127,6 +122,7 @@ public class UserService {
         return coachClientAgreementService
                 .getCoachClientAgreements(coachId)
                 .stream()
+                .filter(coachClientAgreementService::isAgreementActive)
                 .map(a -> UserMapper.toDTO(a.getClient()))
                 .distinct()
                 .toList();
@@ -144,7 +140,7 @@ public class UserService {
                 .toList();
     }
 
-    public TrainingScheduleDto getClientSchedule(UUID clientId, UUID coachAuthId){
+    public TrainingScheduleDto getClientTrainingSchedule(UUID clientId, UUID coachAuthId){
         UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
                                 () -> new UserNotFoundException("Coach was not found with authId: " + coachAuthId))
                             .getId();
@@ -170,40 +166,15 @@ public class UserService {
         return TrainingScheduleMapper.toDto(schedule);
     }
 
-    public TrainingScheduleDto removeWorkoutFromSchedule(UUID clientAuthId, UUID workoutId) {
-        TrainingSchedule trainingSchedule = userRepository.findByAuthId(clientAuthId).orElseThrow(
-                        () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
-                .getTrainingSchedule();
-
-        List<Workout> workouts = trainingSchedule.getWorkouts();
-
-        Workout workoutToRemove =
-                        workouts.stream()
-                        .filter(w -> w.getId().equals(workoutId))
-                        .findFirst()
-                        .orElseThrow(
-                            () -> new WorkoutNotFoundException("Workout not found with id: " + workoutId));
-
-        workouts.remove(workoutToRemove);
-
-        return trainingScheduleService.saveSchedule(trainingSchedule);
-    }
 
     public TrainingScheduleDto addWorkoutToSchedule(UUID clientAuthId, WorkoutRequestDto workoutDto) {
         TrainingSchedule trainingSchedule = userRepository.findByAuthId(clientAuthId).orElseThrow(
                         () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
                 .getTrainingSchedule();
 
-        return addWorkoutToScheduleHelper(workoutDto, trainingSchedule);
+        return trainingScheduleService.addWorkoutToSchedule(workoutDto, trainingSchedule);
     }
 
-    private TrainingScheduleDto addWorkoutToScheduleHelper(WorkoutRequestDto workoutDto, TrainingSchedule trainingSchedule){
-        Workout workout = WorkoutMapper.toModel(workoutDto);
-        workout.setTrainingSchedule(trainingSchedule);
-        trainingSchedule.getWorkouts().add(workout);
-
-        return trainingScheduleService.saveSchedule(trainingSchedule);
-    }
 
     public TrainingScheduleDto addWorkoutToClientsSchedule(UUID coachAuthId, UUID clientId, WorkoutRequestDto workoutDto) {
         UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
@@ -216,6 +187,30 @@ public class UserService {
         TrainingSchedule trainingSchedule = userRepository.findById(clientId).orElseThrow(
                 () -> new UserNotFoundException("User not found with id: " + clientId)).getTrainingSchedule();
 
-        return addWorkoutToScheduleHelper(workoutDto, trainingSchedule);
+        return trainingScheduleService.addWorkoutToSchedule(workoutDto, trainingSchedule);
+    }
+
+    public TrainingScheduleDto removeWorkoutFromClientSchedule(UUID coachAuthId, UUID clientId, UUID workoutId) {
+        UUID coachId = userRepository.findByAuthId(coachAuthId).orElseThrow(
+                () -> new UserNotFoundException("Coach not found with authId: " + coachAuthId)).getId();
+
+        if(!coachClientAgreementService.isUserAClientOfCoach(clientId, coachId)){
+            throw new UnauthorizedScheduleAccessException("The user with id: " + coachId + " is not a coach of user with id: " + clientId);
+        }
+
+        // .get should be fine here since above will throw if client user doesn't exist.
+        TrainingSchedule trainingSchedule = userRepository.findById(clientId).get().getTrainingSchedule();
+
+        return trainingScheduleService.removeWorkoutFromSchedule(trainingSchedule, workoutId);
+    }
+
+
+    public TrainingScheduleDto removeWorkoutFromSchedule(UUID clientAuthId, UUID workoutId) {
+        TrainingSchedule trainingSchedule = userRepository.findByAuthId(clientAuthId).orElseThrow(
+                        () -> new UserNotFoundException("User not found with authID: " + clientAuthId))
+                .getTrainingSchedule();
+
+
+        return trainingScheduleService.removeWorkoutFromSchedule(trainingSchedule, workoutId);
     }
 }
