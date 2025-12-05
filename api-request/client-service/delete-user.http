@@ -1,2 +1,2 @@
-DELETE http://localhost:4004/api/clients/a526c437-cd19-48a2-9804-fdbe091c0b38
+DELETE http://localhost:4004/api/clients/users/a526c437-cd19-48a2-9804-fdbe091c0b38
 Authorization: Bearer {{token}}

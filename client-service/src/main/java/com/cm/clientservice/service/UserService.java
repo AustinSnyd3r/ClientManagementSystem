@@ -3,10 +3,22 @@ package com.cm.clientservice.service;
 import com.cm.clientservice.dto.OutgoingEmailUpdateDTO;
 import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
-import com.cm.clientservice.exception.EmailAlreadyExistsException;
-import com.cm.clientservice.exception.UserNotFoundException;
+import com.cm.clientservice.dto.contract.*;
+import com.cm.clientservice.dto.contract.template.AgreementTemplateRequestDto;
+import com.cm.clientservice.dto.contract.template.AgreementTemplateResponseDto;
+import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
+import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
+import com.cm.clientservice.exception.contract.CoachClientAgreementNotFoundException;
+import com.cm.clientservice.exception.users.EmailAlreadyExistsException;
+import com.cm.clientservice.exception.schedule.UnauthorizedScheduleAccessException;
+import com.cm.clientservice.exception.users.UserNotFoundException;
+import com.cm.clientservice.mapper.contract.CoachClientAgreementMapper;
+import com.cm.clientservice.mapper.schedule.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.UserMapper;
+import com.cm.clientservice.model.contract.CoachClientAgreement;
+import com.cm.clientservice.model.schedule.TrainingSchedule;
 import com.cm.clientservice.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -21,16 +33,42 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CoachClientAgreementService coachClientAgreementService;
+    private final TrainingScheduleService trainingScheduleService;
+    private final AgreementTemplateService agreementTemplateService;
     private final WebClient webClient;
 
     public UserService(UserRepository userRepository,
                        WebClient.Builder webClientBuilder,
-                       @Value("${auth.service.url}") String authServiceUrl){
+                       @Value("${auth.service.url}") String authServiceUrl,
+                       CoachClientAgreementService coachClientAgreementService,
+                       TrainingScheduleService trainingScheduleService,
+                       AgreementTemplateService agreementTemplateService){
 
         this.userRepository = userRepository;
+        this.agreementTemplateService = agreementTemplateService;
         this.webClient = webClientBuilder.baseUrl(authServiceUrl).build();
+        this.coachClientAgreementService = coachClientAgreementService;
+        this.trainingScheduleService = trainingScheduleService;
 
     }
+
+    private User findCoachByAuthIdOrElseThrow(UUID coachAuthId){
+        return userRepository.findByAuthId(coachAuthId).orElseThrow(
+                () -> new UserNotFoundException("Coach user not found with authId:" + coachAuthId));
+    }
+
+    private User findUserByAuthIdOrElseThrow(UUID userAuthId){
+        return  userRepository.findByAuthId(userAuthId).orElseThrow(
+                () -> new UserNotFoundException("User not found with authId:" + userAuthId));
+    }
+
+    private User findUserByIdOrElseThrow(UUID userId){
+        return  userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User not found with authId:" + userId));
+    }
+
+
 
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO, String auth_id){
         // Make a call to the repository to create a user.
@@ -41,6 +79,10 @@ public class UserService {
 
         User newUser = UserMapper.toModel(userRequestDTO);
         newUser.setAuthId(UUID.fromString(auth_id));
+
+        TrainingSchedule schedule = new TrainingSchedule();
+        newUser.setTrainingSchedule(schedule);
+
         newUser = userRepository.save(newUser);
 
         return UserMapper.toDTO(newUser);
@@ -58,18 +100,9 @@ public class UserService {
                 .toList();
     }
 
-    public List<UserResponseDTO> getAllCoachUsers(){
-        List<User> users = userRepository.findByCoachProfileIsNotNull();
-
-        return users.stream()
-                .map(UserMapper::toDTO)
-                .toList();
-    }
-
     public UserResponseDTO updateUser(UUID authId, UserRequestDTO userRequestDTO, String token){
         // Find the user that has the authId
-        User user = userRepository.findByAuthId(authId).orElseThrow(
-            () ->  new UserNotFoundException("User not found with authId: " + authId));
+        User user = findUserByAuthIdOrElseThrow(authId);
 
         boolean updatingEmail = !user.getEmail().equalsIgnoreCase(userRequestDTO.getEmail());
 
@@ -88,8 +121,7 @@ public class UserService {
             outgoingEmailUpdateDTO.setOldEmail(user.getEmail());
             outgoingEmailUpdateDTO.setNewEmail(userRequestDTO.getEmail());
 
-            // Make a request to the auth service to update the email of the user with this email.
-            // Now check if the token they supplied was valid using our endpoint of auth service.
+            // Let auth service update their email for signing in.
             webClient.put()
                     .uri("/auth/update-email")
                     .header(HttpHeaders.AUTHORIZATION, token)
@@ -109,5 +141,156 @@ public class UserService {
         return UserMapper.toDTO(updatedUser);
     }
 
+    public List<UserResponseDTO> getClientsOfCoach(UUID coachAuthId){
+        UUID coachId = findCoachByAuthIdOrElseThrow(coachAuthId).getId();
 
+        return coachClientAgreementService
+                .getCoachClientAgreements(coachId)
+                .stream()
+                .filter(coachClientAgreementService::isAgreementActive)
+                .map(a -> UserMapper.toDTO(a.getClient()))
+                .distinct()
+                .toList();
+    }
+
+    public List<UserResponseDTO> getCoachesOfClient(UUID clientAuthId) {
+        UUID clientId = findUserByAuthIdOrElseThrow(clientAuthId).getId();
+
+
+        return coachClientAgreementService
+                .getCoachClientAgreements(clientId)
+                .stream()
+                .map(a -> UserMapper.toDTO(a.getCoach()))
+                .distinct()
+                .toList();
+    }
+
+    public TrainingScheduleDto getClientTrainingSchedule(UUID clientId, UUID coachAuthId){
+        UUID coachId = findCoachByAuthIdOrElseThrow(coachAuthId).getId();
+
+        if (!coachClientAgreementService.isUserAClientOfCoach(clientId, coachId)) {
+            throw new UnauthorizedScheduleAccessException("The user with id: " + coachId + " is not a coach of user with id: " + clientId);
+        }
+
+        TrainingSchedule clientSchedule =
+                findUserByIdOrElseThrow(clientId).getTrainingSchedule();
+
+        return TrainingScheduleMapper.toDto(clientSchedule);
+    }
+
+    public TrainingScheduleDto getTrainingSchedule(UUID authId){
+        TrainingSchedule schedule = findUserByAuthIdOrElseThrow(authId).getTrainingSchedule();
+        return TrainingScheduleMapper.toDto(schedule);
+    }
+
+
+    public TrainingScheduleDto addWorkoutToSchedule(UUID clientAuthId, WorkoutRequestDto workoutDto) {
+        UUID trainingScheduleId  =
+                findUserByAuthIdOrElseThrow(clientAuthId).getTrainingSchedule().getId();
+
+        return trainingScheduleService.addWorkoutToSchedule(workoutDto, trainingScheduleId);
+    }
+
+
+    public TrainingScheduleDto addWorkoutToClientsSchedule(UUID coachAuthId, UUID clientId, WorkoutRequestDto workoutDto) {
+        UUID coachId = findCoachByAuthIdOrElseThrow(coachAuthId).getId();
+
+        if(!coachClientAgreementService.isUserAClientOfCoach(clientId, coachId)){
+            throw new UnauthorizedScheduleAccessException("The user with id: " + coachId + " is not a coach of user with id: " + clientId);
+        }
+
+        UUID trainingScheduleId =
+                findUserByIdOrElseThrow(clientId).getTrainingSchedule().getId();
+
+        return trainingScheduleService.addWorkoutToSchedule(workoutDto, trainingScheduleId);
+    }
+
+
+    public TrainingScheduleDto removeWorkoutFromClientSchedule(UUID coachAuthId, UUID clientId, UUID workoutId) {
+        UUID coachId = findCoachByAuthIdOrElseThrow(coachAuthId).getId();
+
+        if(!coachClientAgreementService.isUserAClientOfCoach(clientId, coachId)){
+            throw new UnauthorizedScheduleAccessException("The user with id: " + coachId + " is not a coach of user with id: " + clientId);
+        }
+
+        TrainingSchedule trainingSchedule =
+                findUserByIdOrElseThrow(clientId).getTrainingSchedule();
+
+        return trainingScheduleService.removeWorkoutFromSchedule(trainingSchedule, workoutId);
+    }
+
+    public TrainingScheduleDto removeWorkoutFromSchedule(UUID clientAuthId, UUID workoutId) {
+
+        TrainingSchedule trainingSchedule =
+                findUserByAuthIdOrElseThrow(clientAuthId).getTrainingSchedule();
+
+        return trainingScheduleService.removeWorkoutFromSchedule(trainingSchedule, workoutId);
+    }
+
+
+    public CoachClientAgreementResponseDto proposeCoachClientAgreement(UUID coachAuthId,
+                                                                       UUID clientId,
+                                                                       CoachClientAgreementRequestDto agreementDto) {
+
+        User coach = findCoachByAuthIdOrElseThrow(coachAuthId);
+        User client = findUserByIdOrElseThrow(clientId);
+
+        return coachClientAgreementService
+                .proposeCoachClientAgreement(coach, client, agreementDto);
+    }
+
+    public CoachClientAgreementResponseDto withdrawCoachesAgreementAcceptance(UUID coachAuthId, UUID agreementId) {
+        User coach = findCoachByAuthIdOrElseThrow(coachAuthId);
+
+        CoachClientAgreement agreementToChange =
+                coach.getAgreementsAsCoach()
+                        .stream()
+                        .filter(a -> a.getId().equals(agreementId))
+                        .findFirst()
+                        .orElseThrow(() ->
+                                new CoachClientAgreementNotFoundException(
+                                        "Coach client agreement owned by coach id: " +
+                                                coach.getId() + " with agreement id: " + agreementId + " not found."));
+
+        return coachClientAgreementService.withdrawCoachesAgreementAcceptance(agreementToChange);
+    }
+
+    public List<AgreementTemplateResponseDto> getCoachAgreementTemplates(UUID coachAuthId) {
+        User coach = findCoachByAuthIdOrElseThrow(coachAuthId);
+        return agreementTemplateService.findAgreementsAuthoredByCoach(coach);
+
+    }
+
+    public AgreementTemplateResponseDto createAgreementTemplate(UUID coachAuthId, AgreementTemplateRequestDto templateRequestDto) {
+        User coach = findCoachByAuthIdOrElseThrow(coachAuthId);
+        return agreementTemplateService.createAgreementTemplate(coach, templateRequestDto);
+    }
+
+    public List<CoachClientAgreementResponseDto> getPendingAgreements(UUID authId) {
+        UUID userId = findUserByAuthIdOrElseThrow(authId).getId();
+
+        return coachClientAgreementService
+                .getCoachClientAgreements(userId)
+                .stream()
+                .filter(coachClientAgreementService::isAgreementPending)
+                .map(CoachClientAgreementMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public CoachClientAgreementResponseDto setAcceptanceStatusOfPendingAgreement(UUID clientAuthId, UUID agreementId, ContractAgreementStatusRequestDto agreementRequest) {
+        User client = findUserByAuthIdOrElseThrow(clientAuthId);
+
+        CoachClientAgreement agreementToChange =
+                client.getAgreementsAsClient()
+                        .stream()
+                        .filter(a -> a.getId().equals(agreementId))
+                        .findFirst()
+                        .orElseThrow(() ->
+                                new CoachClientAgreementNotFoundException(
+                                        "Coach client agreement owned by user id: " +
+                                                client.getId() + " with agreement id: " + agreementId + " not found."));
+
+        return coachClientAgreementService.setClientAgreementStatus(agreementToChange, agreementRequest);
+    }
 }

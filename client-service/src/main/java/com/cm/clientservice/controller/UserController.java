@@ -1,5 +1,4 @@
 package com.cm.clientservice.controller;
-
 import com.cm.clientservice.dto.validators.CreateUserValidationGroup;
 import com.cm.clientservice.service.UserService;
 import jakarta.validation.groups.Default;
@@ -17,8 +16,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/clients")
-@Tag(name="Clients", description = "API for managing Clients")
+@RequestMapping("clients/users")
+@Tag(name="Users", description = "API for managing Users")
 public class UserController {
     private final Logger log = LoggerFactory.getLogger(UserController.class);
 
@@ -28,6 +27,7 @@ public class UserController {
         this.userService = userService;
     }
 
+
     @PostMapping
     @Operation(summary = "Create a user.")
     public ResponseEntity<UserResponseDTO> createUser(
@@ -35,7 +35,6 @@ public class UserController {
             @RequestBody UserRequestDTO userRequestDTO,
             @RequestHeader("X-AUTH-ID") String auth_id
     ){
-        log.debug("AUTH ID IS {}", auth_id);
         UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO, auth_id);
         return ResponseEntity.ok().body(userResponseDTO);
     }
@@ -48,6 +47,7 @@ public class UserController {
         return ResponseEntity.ok().body(users);
     }
 
+
     @PutMapping("/")
     @Operation(summary = "Update a user")
     public ResponseEntity<UserResponseDTO> updateUser(@RequestHeader("X-AUTH-ID") String id,
@@ -58,17 +58,9 @@ public class UserController {
         String token = authHeader.substring(tokenStartIdx);
         UUID authId = UUID.fromString(id);
 
-        userService.updateUser(authId, userRequestDTO, token);
+        UserResponseDTO updatedUser = userService.updateUser(authId, userRequestDTO, token);
 
-        return ResponseEntity.ok().body(new UserResponseDTO());
-    }
-
-
-    @GetMapping("/user-clients/{id}")
-    @Operation(summary = "Get all the clients of a user.")
-    public ResponseEntity<List<UserResponseDTO>> getAllUsersClients(@PathVariable UUID id){
-        //TODO: Implement me and replace tis
-        return ResponseEntity.ok().body(List.of(new UserResponseDTO()));
+        return ResponseEntity.ok().body(updatedUser);
     }
 
 
@@ -78,5 +70,4 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-
 }

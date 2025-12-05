@@ -1,6 +1,6 @@
 package com.cm.clientservice.model.contract;
 
-import com.cm.clientservice.model.CoachProfile;
+import com.cm.clientservice.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,10 +19,13 @@ public class AgreementTemplate {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank(message = "Template name must be provided.")
+    private String templateName;
+
     @NotNull(message = "Original author must be included for agreement template.")
     @ManyToOne
     @JoinColumn(name = "coach_profile_id")
-    private CoachProfile author;
+    private User author;
 
     @NotNull(message = "Need to specify if author will allow public template reuse.")
     private Boolean allowPublicTemplateReuse;

@@ -1,7 +1,6 @@
 package com.cm.clientservice.model.contract;
 
-import com.cm.clientservice.model.ClientProfile;
-import com.cm.clientservice.model.CoachProfile;
+import com.cm.clientservice.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,23 +13,20 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CoachClientAgreement {
-    /**
-        Represents a running agreement document between
-     */
 
     @Id
     @GeneratedValue
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "client_profile_id")
+    @JoinColumn(name = "client_id")
     @NotNull(message = "Client profile must be included in coach-client agreement. ")
-    private ClientProfile clientProfile;
+    private User client;
 
     @ManyToOne
-    @JoinColumn(name = "coach_profile_id")
+    @JoinColumn(name = "coach_id")
     @NotNull(message = "Coach profile must be included in coach-client agreement. ")
-    private CoachProfile coachProfile;
+    private User coach;
 
     @ManyToOne
     @JoinColumn(name = "agreement_template_id")
@@ -39,5 +35,11 @@ public class CoachClientAgreement {
 
     @NotNull(message = "Coach-Client Agreement must have a start date.")
     private LocalDate startDate;
+
+    @NotNull(message = "Client agreement status must be specified. ")
+    private Boolean clientIsInAgreement;
+
+    @NotNull(message = "Coach agreement status must be specified. ")
+    private Boolean coachIsInAgreement;
 }
 

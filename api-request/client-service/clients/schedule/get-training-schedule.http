@@ -1,0 +1,5 @@
+### Get request to get a users training schedule.
+GET http://localhost:4004/api/clients/client/schedule
+Authorization: Bearer {{token}}
+
+> {% client.global.set("training_schedule_id", response.body.id) %}

@@ -1,13 +1,12 @@
 ### Post request to create a user.
-POST http://localhost:4004/api/clients
+POST http://localhost:4004/api/clients/users
 Authorization: Bearer {{token}}
-X-AUTH-ID: a7920032-59cf-461f-a293-6944954d3747
 Content-Type: application/json
 
 {
   "firstName": "Test",
   "lastName": "User",
-  "email": "test_user@test.com",
+  "email": "test_user3@test.com",
   "address": "123 Test-Request Ave, 493201, WA, USA.",
   "dateOfBirth": "2000-01-01",
   "registeredDate": "2025-01-01"

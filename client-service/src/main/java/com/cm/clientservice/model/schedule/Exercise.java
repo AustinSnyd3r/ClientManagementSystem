@@ -27,4 +27,8 @@ public class Exercise {
 
     @NotNull
     private String coachNotes;
+
+    @ManyToOne
+    @JoinColumn(name = "workout_id")
+    private Workout workout;
 }
