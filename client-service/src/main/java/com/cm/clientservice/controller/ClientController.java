@@ -1,30 +1,7 @@
 package com.cm.clientservice.controller;
-
-
-/**
- * Spec:
- *
- * Coaches should be able to create a new Agreement Template for them to use
- *
- *
- *
- * Coaches should be able to propose a CoachClientAgreement to a user.
- *  - Require both parties to sign before continuing
- *  - Dependency on the BillingService to take billing info and schedule payments
- *
- * Coaches should be able to cancel a CoachClientAgreement
- *  - Notify the client of the cancelation
- *
- * Coaches should be able to propose edits to a CoachClientAgreement while running
- *  - Require both party signing to continue.
- *
- * Coaches should be able to
- *
- *
- *
- */
-
 import com.cm.clientservice.dto.UserResponseDTO;
+import com.cm.clientservice.dto.contract.CoachClientAgreementResponseDto;
+import com.cm.clientservice.dto.contract.ContractAgreementStatusRequestDto;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
 import com.cm.clientservice.service.UserService;
@@ -75,5 +52,23 @@ public class ClientController {
                 userService.addWorkoutToSchedule(UUID.fromString(authId), workoutDto);
 
         return ResponseEntity.ok().body(trainingScheduleDto);
+    }
+
+    @GetMapping("/agreements/pending")
+    public ResponseEntity<List<CoachClientAgreementResponseDto>> getPendingAgreements(@RequestHeader("X-AUTH-ID") String authId){
+        List<CoachClientAgreementResponseDto> dtos =
+                userService.getPendingAgreements(UUID.fromString(authId));
+
+        return ResponseEntity.ok().body(dtos);
+    }
+
+    @PutMapping("/agreements/{id}/status")
+    public ResponseEntity<CoachClientAgreementResponseDto> setAcceptanceStatusOfPendingAgreement(@RequestHeader("X-AUTH-ID") String authId,
+                                                                                                 @RequestBody ContractAgreementStatusRequestDto requestDto,
+                                                                                                 @PathVariable String id){
+        CoachClientAgreementResponseDto responseDto =
+                userService.setAcceptanceStatusOfPendingAgreement(UUID.fromString(authId), UUID.fromString(id), requestDto);
+
+        return ResponseEntity.ok().body(responseDto);
     }
 }

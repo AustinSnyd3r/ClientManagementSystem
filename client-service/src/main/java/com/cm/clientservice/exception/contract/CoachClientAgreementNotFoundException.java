@@ -1,4 +1,4 @@
-package com.cm.clientservice.exception;
+package com.cm.clientservice.exception.contract;
 
 public class CoachClientAgreementNotFoundException extends RuntimeException{
     public CoachClientAgreementNotFoundException(String message){

@@ -2,7 +2,7 @@ package com.cm.clientservice.service;
 
 import com.cm.clientservice.dto.scheduling.movement.MovementCreateRequestDto;
 import com.cm.clientservice.dto.scheduling.movement.MovementResponseDto;
-import com.cm.clientservice.exception.MovementNotFoundException;
+import com.cm.clientservice.exception.schedule.MovementNotFoundException;
 import com.cm.clientservice.mapper.schedule.MovementMapper;
 import com.cm.clientservice.model.schedule.Movement;
 import com.cm.clientservice.repository.MovementRepository;

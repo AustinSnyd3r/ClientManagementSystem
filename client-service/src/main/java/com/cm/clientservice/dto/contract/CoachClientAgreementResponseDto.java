@@ -1,5 +1,6 @@
 package com.cm.clientservice.dto.contract;
 
+import com.cm.clientservice.dto.contract.template.AgreementTemplateResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 

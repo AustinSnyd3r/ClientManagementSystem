@@ -2,12 +2,14 @@ package com.cm.clientservice.service;
 
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
-import com.cm.clientservice.exception.WorkoutNotFoundException;
+import com.cm.clientservice.exception.schedule.TrainingScheduleNotFoundException;
+import com.cm.clientservice.exception.schedule.WorkoutNotFoundException;
 import com.cm.clientservice.mapper.schedule.TrainingScheduleMapper;
 import com.cm.clientservice.mapper.schedule.WorkoutMapper;
 import com.cm.clientservice.model.schedule.TrainingSchedule;
 import com.cm.clientservice.model.schedule.Workout;
 import com.cm.clientservice.repository.TrainingScheduleRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +24,7 @@ public class TrainingScheduleService {
         this.trainingScheduleRepository = trainingScheduleRepository;
     }
 
+    @Transactional
     public TrainingScheduleDto removeWorkoutFromSchedule(TrainingSchedule schedule, UUID workoutId){
         List<Workout> workouts = schedule.getWorkouts();
 
@@ -38,8 +41,13 @@ public class TrainingScheduleService {
         return TrainingScheduleMapper.toDto(updatedSchedule);
     }
 
-    public TrainingScheduleDto addWorkoutToSchedule(WorkoutRequestDto workoutDto, TrainingSchedule trainingSchedule){
+    @Transactional
+    public TrainingScheduleDto addWorkoutToSchedule(WorkoutRequestDto workoutDto, UUID trainingScheduleId){
         Workout workout = WorkoutMapper.toModel(workoutDto);
+
+        TrainingSchedule trainingSchedule = trainingScheduleRepository.findById(trainingScheduleId).orElseThrow(
+                () -> new TrainingScheduleNotFoundException("Training schedule not found with id: " + trainingScheduleId));
+
         workout.setTrainingSchedule(trainingSchedule);
         trainingSchedule.getWorkouts().add(workout);
 

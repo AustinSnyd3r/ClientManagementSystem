@@ -1,4 +1,4 @@
-package com.cm.clientservice.dto.contract;
+package com.cm.clientservice.dto.contract.template;
 
 import lombok.Getter;
 import lombok.Setter;

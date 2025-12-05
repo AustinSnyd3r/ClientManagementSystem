@@ -23,7 +23,6 @@ public class CoachClientAgreementMapper {
     public static CoachClientAgreement toModel(CoachClientAgreementRequestDto dto){
         CoachClientAgreement agreement = new CoachClientAgreement();
 
-        agreement.setAgreementTemplate(AgreementTemplateMapper.toModel(dto.getAgreementTemplateDto()));
         agreement.setClientIsInAgreement(Boolean.FALSE);
         agreement.setCoachIsInAgreement(Boolean.TRUE);
         agreement.setStartDate(LocalDate.parse(dto.getStartDate()));

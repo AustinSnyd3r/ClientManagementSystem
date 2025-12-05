@@ -1,8 +1,10 @@
 package com.cm.clientservice.mapper.contract;
 
-import com.cm.clientservice.dto.contract.AgreementTemplateRequestDto;
-import com.cm.clientservice.dto.contract.AgreementTemplateResponseDto;
+import com.cm.clientservice.dto.contract.template.AgreementTemplateRequestDto;
+import com.cm.clientservice.dto.contract.template.AgreementTemplateResponseDto;
 import com.cm.clientservice.model.contract.AgreementTemplate;
+
+import java.util.List;
 
 public class AgreementTemplateMapper {
 
@@ -18,6 +20,13 @@ public class AgreementTemplateMapper {
         dto.setTemplateName(agreementTemplate.getTemplateName());
 
         return dto;
+    }
+
+    public static List<AgreementTemplateResponseDto> toDto(List<AgreementTemplate> agreementTemplates){
+        return agreementTemplates
+                .stream()
+                .map(AgreementTemplateMapper::toDto)
+                .toList();
     }
 
     public static AgreementTemplate toModel(AgreementTemplateRequestDto dto) {

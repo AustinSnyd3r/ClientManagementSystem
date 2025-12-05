@@ -1,4 +1,4 @@
-package com.cm.clientservice.exception;
+package com.cm.clientservice.exception.schedule;
 
 public class WorkoutNotFoundException extends RuntimeException{
     public WorkoutNotFoundException(String message){

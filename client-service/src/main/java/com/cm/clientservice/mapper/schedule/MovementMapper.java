@@ -17,9 +17,7 @@ public class MovementMapper {
 
     public static Movement toModel(MovementReuseRequestDto movementDto) {
         Movement movement = new Movement();
-
         movement.setId(UUID.fromString(movementDto.getId()));
-
         return movement;
     }
 }

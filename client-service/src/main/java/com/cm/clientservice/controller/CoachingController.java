@@ -1,15 +1,11 @@
 package com.cm.clientservice.controller;
-
-import com.cm.clientservice.dto.UserRequestDTO;
 import com.cm.clientservice.dto.UserResponseDTO;
-import com.cm.clientservice.dto.contract.AgreementTemplateRequestDto;
-import com.cm.clientservice.dto.contract.AgreementTemplateResponseDto;
+import com.cm.clientservice.dto.contract.template.AgreementTemplateRequestDto;
+import com.cm.clientservice.dto.contract.template.AgreementTemplateResponseDto;
 import com.cm.clientservice.dto.contract.CoachClientAgreementRequestDto;
 import com.cm.clientservice.dto.contract.CoachClientAgreementResponseDto;
 import com.cm.clientservice.dto.scheduling.TrainingScheduleDto;
 import com.cm.clientservice.dto.scheduling.workout.WorkoutRequestDto;
-import com.cm.clientservice.model.contract.AgreementTemplate;
-import com.cm.clientservice.model.contract.CoachClientAgreement;
 import com.cm.clientservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController("clients/coaching")
+@RestController
+@RequestMapping("clients/coaching")
 @Tag(name = "coaching", description = "API for coaching management.")
 public class CoachingController {
 
@@ -85,8 +82,8 @@ public class CoachingController {
     @PutMapping("/agreement/withdraw/{agreementId}")
     public ResponseEntity<CoachClientAgreementResponseDto> withdrawCoachesAgreementAcceptance(@RequestHeader("X-AUTH-ID") String coachAuthId,
                                                       @PathVariable String agreementId){
-        // Alert the user they have been dropped.
-        // Alert billing service that the contract is being terminated.
+        //TODO: Alert user of withdrawal.
+        //TODO: Alert billing service of end of contract.
 
         CoachClientAgreementResponseDto dto =
                 userService.withdrawCoachesAgreementAcceptance(UUID.fromString(coachAuthId), UUID.fromString(agreementId));
@@ -97,31 +94,16 @@ public class CoachingController {
     @PostMapping("/templates")
     public ResponseEntity<AgreementTemplateResponseDto> createAgreementTemplate(@RequestHeader("X-AUTH-ID") String coachAuthId,
                                                                                 @RequestBody AgreementTemplateRequestDto templateRequestDto){
-
-        return ResponseEntity.ok().body(dto);
-    }
-
-    // TODO: This should be accessed only by accounts that have a coaching profile
-    public ResponseEntity<AgreementTemplateResponseDto> deleteAgreementTemplate(){
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/templates/template/{templateId}/update")
-    public ResponseEntity<AgreementTemplateResponseDto> updateAgreementTemplate(@RequestHeader("X-AUTH-ID") String coachAuthId,
-                                                                     @RequestBody AgreementTemplateRequestDto templateRequestDto,
-                                                                     @PathVariable String templateId){
         AgreementTemplateResponseDto dto =
-                //TODO: Add a validation group ot the request dto to make it optional for each of the fields.
-                userService.updateAgreementTemplate(UUID.fromString(coachAuthId), UUID.fromString(templateId), templateRequestDto);
+                userService.createAgreementTemplate(UUID.fromString(coachAuthId), templateRequestDto);
 
         return ResponseEntity.ok().body(dto);
     }
 
     @GetMapping("/templates")
-    public ResponseEntity<List<AgreementTemplateResponseDto>> getCoachAgreementTemplates(@RequestHeader("X-AUTH-ID") String coachAuthId){
+    public ResponseEntity<List<AgreementTemplateResponseDto>> getCoachesAgreementTemplates(@RequestHeader("X-AUTH-ID") String coachAuthId){
          List<AgreementTemplateResponseDto> dtoList =
                  userService.getCoachAgreementTemplates(UUID.fromString(coachAuthId));
-
 
          return ResponseEntity.ok().body(dtoList);
     }

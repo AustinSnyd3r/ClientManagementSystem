@@ -1,5 +1,5 @@
 package com.cm.clientservice.dto.contract;
-
+import com.cm.clientservice.dto.contract.template.AgreementTemplateReuseRequestDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,9 +8,7 @@ import lombok.Setter;
 @Setter
 public class CoachClientAgreementRequestDto {
     @NotNull
-    private String clientId;
-    @NotNull
     private String startDate;
     @NotNull
-    private AgreementTemplateRequestDto agreementTemplateDto;
+    private AgreementTemplateReuseRequestDto template;
 }

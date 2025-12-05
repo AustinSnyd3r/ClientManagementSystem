@@ -1,4 +1,4 @@
-package com.cm.clientservice.exception;
+package com.cm.clientservice.exception.schedule;
 
 public class UnauthorizedScheduleAccessException extends RuntimeException{
     public UnauthorizedScheduleAccessException(String message){
